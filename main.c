@@ -13,6 +13,7 @@ void main(){
 //yhteiset 
  unsigned int index;  
   unsigned int i, j;
+  unsigned int threshold=16;
 //image 2 muuttujat
   
   unsigned error2;
@@ -46,7 +47,7 @@ unsigned int greyhight=504;
   /*use image here*/
 //printf("\nimage0 ekat bitit: %c %c %c %c %c\nimage1 ekat bitit: %c %c %c %c %c",image1[23708161],image1[1],image1[2],image1[3],image1[4],image2[0],image2[1],image2[2],image2[3],image2[4]);
 index=0;
-printf("ENNEN LOOPPIA ON PASKAA");
+
 for ( i=0;i<height1*width1*4;i=i+width1*4*4 ) {
 
   for ( j=0;  j<width1*4;j=j+4 ){
@@ -65,9 +66,6 @@ for ( i=0;i<height1*width1*4;i=i+width1*4*4 ) {
   free(image1);
  free(image2);
 // printf("strlen: %d",strlen(resized_image));
-
-printf("LOOPIN JÄLKEEN ON POUTA SÄÄ");
-printf(" \n%f \n%d \n%c \n%s",resized_image1[8786],resized_image1[8786],resized_image1[8786],resized_image1[8786]);
 
 
    //const char* filename_resized1;
@@ -100,6 +98,8 @@ unsigned int d;
 unsigned int x;
 unsigned int y;
 float window=9;
+int window1=9;
+//img1
 float mean1=0;
 float mean2=0;
 float std1=0;
@@ -109,6 +109,17 @@ float zncc=0;
 unsigned int best_d;
 unsigned char disp_image1[greysize];
 float max_sum;
+//img2
+float mean3=0;
+float mean4=0;
+float std3=0;
+float std4=0;
+float z2=0;
+float zncc2=0;
+unsigned int best_d2;
+unsigned char disp_image2[greysize];
+float max_sum2;
+
 
 printf("ZNCC loopin alku");
 //käy läpi jokaisen rivin
@@ -117,59 +128,150 @@ for (j=0;j<=greysize-greywidth;j=j+greywidth){
    
     for (i=j;i<j+greywidth;i=i+1){
       
-        for(d=0;d<ndisp;d=d+1){
+        for(d=0;d<=ndisp;d=d+1){
 //                printf("\nMean loop");
-                for(y=j;y<j+greywidth*window;y=y+greywidth){
-                        for(x=i;x<=window;x=x+1){
+                for(y=i;y<=i+greywidth*window1;y=y+greywidth){
+                        for(x=y;x<=y+window1;x=x+1){
                             //get mean
+                            //img1
                             mean1=mean1+greyscale_image1[x];      
-                            mean2=mean2+greyscale_image2[x+d];
+                            mean2=mean2+greyscale_image2[x-d];
+                            //img2
+                            mean3=mean3+greyscale_image2[x];      
+                            mean4=mean4+greyscale_image1[x+d];
+                            
                         }
                     
                 }
+                //img1
                 mean1=mean1/window;
                 mean2=mean2/window;
+                //img2
+                mean3=mean3/window;
+                mean4=mean4/window;
   //              printf("\nzncc loop");
-                for(y=j;y<j+greywidth*window;y=y+greywidth){
-                        for(x=i;x<=window;x=x+1){
+                for(y=i;y<i+greywidth*window1;y=y+greywidth){
+                        for(x=y;x<=y+window1;x=x+1){
                             //get values to calculate ZNCC
+                            //img1
                             std1=std1+(greyscale_image1[x]-mean1)*(greyscale_image1[x]-mean1);
-                            std2=std2+(greyscale_image2[x]-mean2)*(greyscale_image2[x]-mean2);
+                            std2=std2+(greyscale_image2[x-d]-mean2)*(greyscale_image2[x-d]-mean2);
                         
-                            z=z+((greyscale_image1[x]-mean1)*(greyscale_image2[x+d]-mean2));
+                            z=z+((greyscale_image1[x]-mean1)*(greyscale_image2[x-d]-mean2));
+                            //img2
+                            std3=std3+(greyscale_image2[x]-mean3)*(greyscale_image2[x]-mean3);
+                            std4=std4+(greyscale_image1[x+d]-mean4)*(greyscale_image1[x+d]-mean4);
+                        
+                            z2=z2+((greyscale_image2[x]-mean3)*(greyscale_image1[x+d]-mean4));                            
+                            
                         }
+                        
                 }
-                std1=sqrt(std1/window*window);
-                std2=sqrt(std2/window*window);
+                //img1
+                std1=sqrt(std1/window);
+                std2=sqrt(std2/window);
                 zncc=z/(std1*std2);
+                //img2
+                std3=sqrt(std3/window);
+                std4=sqrt(std4/window);
+                zncc2=z2/(std3*std4);
+                
+                
                 if(zncc>max_sum){
+                //img1
                 max_sum=zncc;
                 best_d=d;
-                    }
-        
+                }
+                
+                if(zncc2>max_sum2){
+                //img2
+                max_sum2=zncc2;
+                best_d2=d;
+                }
+                
+//Resets the values for the next d cycle
+                //img1
                 mean1=0;
                 mean2=0;
+                std1=0;
+                std2=0;
+                zncc=0;
+                z=0;
+                //img2
+                mean3=0;
+                mean4=0;
+                std3=0;
+                std4=0;
+                zncc2=0;
+                z2=0;
         }
-
-        disp_image1[i]=best_d;
+        //printf("\nBest_d: %d Max_sum: %f", best_d, max_sum);
+       
+       //img1
+       disp_image1[i+((window1-1)/2)*greywidth+((window1-1)/2)]=best_d;       
+       max_sum=0;
         best_d=0;
+        
+       //img2
+       disp_image2[i+((window1-1)/2)*greywidth+((window1-1)/2)]=best_d2;       
+       max_sum2=0;
+        best_d2=0;
+       
 }
-printf(" %d",j);
+//printf(" %d",j);
 
 }
-    printf("\nwohoo!");
+  
+/*Testing stuff
+  printf("\nwohoo!");
 //disp image rescale from 0...65 to 0...255
+
 for ( i=0;i<greysize;i=i+1){
+    //img1
     disp_image1[i]=3.938*disp_image1[i];
-        //greyscale_image2[index]=0.2126*resized_image2[i]+0.7152*resized_image2[i+1]+0.0722*resized_image2[i+2];
-    
-}    
+    //img2
+    disp_image2[i]=3.938*disp_image2[i]; 
+}
+
     printf("\nwohoo!");
     
-    //encode
+    //encode img1
 const char* filename_disp1;
 filename_disp1 = "disp1.png";
 unsigned errorrr1 = lodepng_encode_file(filename_disp1, disp_image1, width1/4, height1/4,LCT_GREY,8);
 
+    //encode img1
+const char* filename_disp2;
+filename_disp2 = "disp2.png";
+unsigned errorrr2 = lodepng_encode_file(filename_disp2, disp_image2, width1/4, height1/4,LCT_GREY,8);
+*/
+
+//post processing
+//cross correlation
+unsigned char final_image[greysize];
+for(i=0;i<=greysize;i=i+1){
+    if(abs(disp_image1[i]-disp_image2[i])>threshold){
+    final_image[i]=0;        
+    }
+    else{
+        final_image[i]=disp_image1[i];
+    }
+
+}
+//occlusion filling
+for(i=0;i<=greysize;i=i+1){
+    if(final_image[i]==0){
+    final_image[i]=final_image[i-1];        
+    }
+}
+
+for ( i=0;i<greysize;i=i+1){
+    //img1
+    final_image[i]=3.938*final_image[i];
+}
+
+const char* filename_final;
+filename_final = "final.png";
+unsigned errorrr2 = lodepng_encode_file(filename_final, final_image, width1/4, height1/4,LCT_GREY,8);
     
 }
