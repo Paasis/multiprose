@@ -2,8 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <windows.h> 
 void main(){
-	//Image 1 muuttujat
+    //timer
+    LARGE_INTEGER frequency; 
+    LARGE_INTEGER t1, t2;
+    double elapsedTime;
+
+    // get ticks per second
+    QueryPerformanceFrequency(&frequency);
+    
+    QueryPerformanceCounter(&t1);
+	
+    //Image 1 muuttujat
   unsigned error1;
   unsigned char* image1;
   unsigned width1, height1;
@@ -30,22 +41,14 @@ unsigned int greysize=735*504;
 unsigned int greywidth=735;
 unsigned int greyhight=504; 
  
- 
-  printf("ALKU");
-
-
-  
+   
   error1 = lodepng_decode32_file(&image1, &width1, &height1, filename1);
   if(error1) printf("error %u: %s\n", error1, lodepng_error_text(error1));
   
   error2 = lodepng_decode32_file(&image2, &width2, &height2, filename2);
   if(error2) printf("error %u: %s\n", error2, lodepng_error_text(error2));
   
-  printf("DECODE");
-  //printf("leveys:%d pituus:%d strlen:%d w*h*4:%d %s",width1,height1, strlen(image1),width1*height1*4, filename1);
-   // printf("\nw:%d h:%d strlen:%d %d %s",width2,height2, strlen(image2),width2*height1*4, filename2);
-  /*use image here*/
-//printf("\nimage0 ekat bitit: %c %c %c %c %c\nimage1 ekat bitit: %c %c %c %c %c",image1[23708161],image1[1],image1[2],image1[3],image1[4],image2[0],image2[1],image2[2],image2[3],image2[4]);
+
 index=0;
 
 for ( i=0;i<height1*width1*4;i=i+width1*4*4 ) {
@@ -121,7 +124,7 @@ unsigned char disp_image2[greysize];
 float max_sum2;
 
 
-printf("ZNCC loopin alku");
+
 //käy läpi jokaisen rivin
 for (j=0;j<=greysize-greywidth;j=j+greywidth){
     //käy läpi jokaisen sarakkeen
@@ -273,5 +276,12 @@ for ( i=0;i<greysize;i=i+1){
 const char* filename_final;
 filename_final = "final.png";
 unsigned errorrr2 = lodepng_encode_file(filename_final, final_image, width1/4, height1/4,LCT_GREY,8);
-    
+ 
+    // stop timer
+    QueryPerformanceCounter(&t2);
+
+    // compute and print the elapsed time in millisec
+    elapsedTime = (t2.QuadPart - t1.QuadPart) * 1000.0 / frequency.QuadPart;
+    printf("%d ms.\n",elapsedTime);
+ 
 }
