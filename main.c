@@ -4,7 +4,14 @@
 #include <math.h>
 #include <windows.h> 
 void main(){
-    //timer
+__int64 freq, start, end, diff;
+
+// start
+QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
+QueryPerformanceCounter((LARGE_INTEGER*)&start);    
+    
+/*   
+   //timer
     LARGE_INTEGER frequency; 
     LARGE_INTEGER t1, t2;
     double elapsedTime;
@@ -13,7 +20,7 @@ void main(){
     QueryPerformanceFrequency(&frequency);
     
     QueryPerformanceCounter(&t1);
-	
+	*/
     //Image 1 muuttujat
   unsigned error1;
   unsigned char* image1;
@@ -277,11 +284,20 @@ const char* filename_final;
 filename_final = "final.png";
 unsigned errorrr2 = lodepng_encode_file(filename_final, final_image, width1/4, height1/4,LCT_GREY,8);
  
+ /*
     // stop timer
     QueryPerformanceCounter(&t2);
 
     // compute and print the elapsed time in millisec
     elapsedTime = (t2.QuadPart - t1.QuadPart) * 1000.0 / frequency.QuadPart;
+    //elapsedTime=t2-t1;
     printf("%d ms.\n",elapsedTime);
+ */
  
+ // end
+QueryPerformanceCounter((LARGE_INTEGER*)&end);
+diff = ((end - start) * 1000) / freq;
+
+unsigned int milliseconds = (unsigned int)(diff & 0xffffffff);
+printf("It took %u ms\n", milliseconds);
 }
