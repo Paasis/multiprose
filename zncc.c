@@ -3,6 +3,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <windows.h>
+
+//
+//Ville Kemppainen & Mikko Paasimaa
+//
+
 __int64 freq, start, end, diff;
 //greyscale
 unsigned int greysize=735*504;
@@ -12,7 +17,7 @@ unsigned int ndisp=260/4;
 
 int window=9;
 int threshold=16;
-const char* filename_final = "final2.png";
+const char* filename_final = "final.png";
 
 char resize_greyscale(unsigned char* image,unsigned char* greyscale_image,int width,int height){
 unsigned char* resized_image=(char*)malloc(1481760);
@@ -46,7 +51,7 @@ float std1,std2;
 float z, zncc, max_sum;
 
 //käy läpi jokaisen rivin
-for (j=0;j<=greysize-greywidth*((window+1)/2);j=j+greywidth){
+for (j=0;j<=greysize-greywidth*((window+1)/2)-8*greywidth;j=j+greywidth){
     //käy läpi jokaisen sarakkeen
    
     for (i=j;i<j+greywidth;i=i+1){
@@ -104,7 +109,7 @@ for (j=0;j<=greysize-greywidth*((window+1)/2);j=j+greywidth){
                 z=0;
   
         }
-       // printf("\ni: %d",i);
+        //printf("\ni: %d",i);
        
        
        disp_image[i+((window-1)/2)*greywidth+((window-1)/2)]=best_d;       
@@ -125,7 +130,7 @@ float std1,std2;
 float z, zncc, max_sum;
 int best_d;
 //käy läpi jokaisen rivin
-for (j=0;j<=greysize-greywidth*((window+1)/2);j=j+greywidth){
+for (j=0;j<=greysize-greywidth*((window+1)/2)-8*greywidth;j=j+greywidth){
     //käy läpi jokaisen sarakkeen
    
     for (i=j;i<j+greywidth;i=i+1){
@@ -217,30 +222,26 @@ for(i=0;i<=greysize;i=i+1){
 
 //occlusion filling
 
-for(i=0;i<=greysize;i=i+1){
+for(i=0;i<=greysize-9*greywidth;i=i+1){
     if(final_image[i]==0){
     //final_image[i]=final_image[i-1];
     for(j=1;j<window;j=j+1){
         
         if(final_image[i]!=0){
-            printf("\n%d",j);
             break;
         }
-        else if(reference[i-j]!=0){
-            final_image[i]=reference[i-j];
-                        printf("\na");
-        }
+        
         else if(reference[i+j]!=0){
         final_image[i]=reference[i+j];
-          printf("\nb");
         }
         else if(reference[i+j*greywidth]!=0){
         final_image[i]=reference[i+j*greywidth];
-          printf("\nc");
+        }
+		else if(reference[i-j]!=0){
+            final_image[i]=reference[i-j];
         }
         else if(reference[i-j*greywidth]!=0){
         final_image[i]=reference[i-j*greywidth];
-          printf("\nd");
         }
 
         else {
