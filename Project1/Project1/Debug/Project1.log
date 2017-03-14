@@ -1,20 +1,20 @@
-﻿Build started 8.3.2017 11:34:49.
-     1>Project "K:\Multiprose\Project1\Project1\Project1.vcxproj" on node 2 (Build target(s)).
+﻿Build started 14.3.2017 10:47:57.
+     1>Project "C:\Users\mpaasima\Downloads\multiprose\Project1\Project1\Project1.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt zncc.c
-         zncc.c
-     1>k:\multiprose\project1\project1\zncc.c(34): warning C4244: '=' : conversion from 'double' to 'unsigned char', possible loss of data
-     1>k:\multiprose\project1\project1\zncc.c(88): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>k:\multiprose\project1\project1\zncc.c(89): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>k:\multiprose\project1\project1\zncc.c(173): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>k:\multiprose\project1\project1\zncc.c(174): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>k:\multiprose\project1\project1\zncc.c(268): warning C4244: '=' : conversion from 'double' to 'unsigned char', possible loss of data
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP SDK\3.0\\include" /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt opencl.c
+         opencl.c
+     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(48): warning C4013: 'malloc' undefined; assuming extern returning int
+     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(56): warning C4013: 'free' undefined; assuming extern returning int
+     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(59): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(69): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(40): warning C4101: 'c_units' : unreferenced local variable
+     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(43): warning C4101: 'group_size' : unreferenced local variable
+     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(44): warning C4101: 'item_sizes' : unreferenced local variable
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"K:\Multiprose\Project1\Debug\Project1.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"K:\Multiprose\Project1\Debug\Project1.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"K:\Multiprose\Project1\Debug\Project1.lib" /MACHINE:X86 Debug\lodepng.obj
-         Debug\zncc.obj
-         Project1.vcxproj -> K:\Multiprose\Project1\Debug\Project1.exe
-     1>Done Building Project "K:\Multiprose\Project1\Project1\Project1.vcxproj" (Build target(s)).
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\AMD APP SDK\3.0\\lib\x86" OpenCL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.lib" /MACHINE:X86 Debug\opencl.obj
+         Project1.vcxproj -> C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.exe
+     1>Done Building Project "C:\Users\mpaasima\Downloads\multiprose\Project1\Project1\Project1.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.48
+Time Elapsed 00:00:00.33
