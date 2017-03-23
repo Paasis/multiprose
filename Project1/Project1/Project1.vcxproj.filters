@@ -18,6 +18,12 @@
     <ClCompile Include="opencl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="zncc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lodepng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="im0.png">
@@ -26,5 +32,18 @@
     <Image Include="im1.png">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="hello.cl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="copy.cl">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lodepng.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

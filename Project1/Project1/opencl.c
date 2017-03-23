@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_DEPRECATE
 #include <CL/cl.h>
 #include <stdio.h>
 //
@@ -25,7 +27,7 @@
 
 // https://gist.github.com/courtneyfaulkner/7919509 List openCL platforms and devices.
 
-int main() {
+int main2() {
 
     int i, j;
     char* value;
@@ -44,6 +46,7 @@ int main() {
     size_t item_sizes;
 
     // get all platforms
+	
     clGetPlatformIDs(0, NULL, &platformCount);
     platforms = (cl_platform_id*)malloc(sizeof(cl_platform_id) * platformCount);
     clGetPlatformIDs(platformCount, platforms, NULL);
@@ -132,6 +135,11 @@ int main() {
     }
 
     free(platforms);
-    return 0;
+    
+
+	
+	return 0;
 
 }
+
+
