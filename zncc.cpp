@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include "lodepng.h"
-#define kernelpath "hello.cl"
+#define kernelpath "kernel.cl"
 #define IMAGE1 "im0.png";
 void CheckError(cl_int error)
 {
@@ -14,7 +14,7 @@ void CheckError(cl_int error)
 		std::cerr << "OpenCL call failed with error " << error << std::endl;
 		
 
-		std::exit(1);
+			std::exit(1);
 	}
 }
 
@@ -23,8 +23,9 @@ void decode(const char *filename, unsigned &width, unsigned &height, std::vector
 }
 
 struct Image {
-	int height, width;
+
 	std::vector<unsigned char> pixel;
+	int height, width;
 };
 
 Image load_image(const char *filename) {
@@ -144,12 +145,8 @@ int main(){
 	std::cout << "Context created" << std::endl;
 
 // Create a program from source
-	
-	
 	cl_program program = CreateProgram(LoadKernel(kernelpath),
 		context);
-	
-
 	
 	error = clBuildProgram(program, deviceIdCount, deviceIds.data(),
 		nullptr, nullptr, nullptr);
@@ -166,7 +163,7 @@ int main(){
 	delete[] build_log;
 
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateKernel.html
-	cl_kernel kernel = clCreateKernel(program, "hello", &error);
+	cl_kernel kernel = clCreateKernel(program, "resizeandgreyscale", &error);
 	CheckError(error);
 	std::cout << "kernel created" << std::endl;
 
@@ -176,28 +173,86 @@ int main(){
 	lodepng_decode32_file(&image, &width, &height, "im0.png");
 	//Image image= load_image("im0.png");
 	std::cout << "Image loaded" << std::endl;
-	static const cl_image_format format = { CL_RGBA, CL_UNSIGNED_INT32 };
+	
+	//input format
+	static const cl_image_format format = { CL_RGBA, CL_UNSIGNED_INT8 };
+	//output format
+	static const cl_image_format oformat = { CL_R, CL_UNSIGNED_INT8 };
+
 	
 	cl_image_desc desc;
  
 	size_t h = height;
 	size_t w = width;
 	size_t d = 1;
-	size_t r = width * 4;
-	
-	desc.image_type = CL_MEM_OBJECT_IMAGE2D;
+	size_t r = 0;//width * 4;
+	cl_mem_object_type mt = CL_MEM_OBJECT_IMAGE2D;
+	cl_uint mip = 0;
+
+	desc.image_type = mt ;
 	desc.image_width = w;
 	desc.image_height = h;
 	desc.image_depth = d;
 	desc.image_row_pitch = r;
+	desc.num_mip_levels = mip;
+	desc.buffer = NULL;
+	desc.num_samples = 0;
+	desc.image_slice_pitch = 0;
+	desc.image_array_size = 0;
 
 	
+	//inputimage
 	cl_mem inputImage = clCreateImage(context, CL_MEM_READ_ONLY|CL_MEM_ALLOC_HOST_PTR |CL_MEM_COPY_HOST_PTR, &format,
 		&desc,
 		image,
 		&error);
 	CheckError(error);
 
+	desc.image_width = width / 4;
+	desc.image_height = height / 4;
+	cl_mem outputImage = clCreateImage(context, NULL, &oformat, &desc, NULL, &error);
+	CheckError(error);
 
+// Setup the kernel arguments
+	clSetKernelArg(kernel, 0, sizeof(cl_mem), &inputImage);
+	clSetKernelArg(kernel, 1, sizeof(cl_mem), &outputImage);
+//Command queue
+	cl_command_queue queue = clCreateCommandQueue(context, deviceIds[0],
+		0, &error);
+	CheckError(error);
 
+	cl_uint work_dimension = 1;
+	const size_t work_offset = 0;
+	const size_t global_worksize = { height*width };
+	const size_t local_worksize = {16};
+	const cl_event event_wait_list = NULL;
+	cl_uint num_events_in_wait_list = 0;
+	cl_event event = NULL;
+
+	CheckError(clEnqueueNDRangeKernel(queue, kernel, work_dimension, work_offset, &global_worksize, &local_worksize,
+		 num_events_in_wait_list, nullptr, &event));
+
+//	unsigned char* result= (unsigned char*)malloc(735 * 504*4+1);
+	std::vector<uint8_t>output = std::vector<uint8_t>(width*height / 4);
+	
+	std::size_t origin[3] = { 0 };
+	std::size_t region[3] = { width/4, height/4, 1 };
+	clEnqueueReadImage(queue, outputImage, CL_TRUE,
+		origin, region, 0, 0,
+		&output[0], 0, nullptr, nullptr);
+	
+	//unsigned error3 = lodepng_encode_file("test.png", result, width / 4, height / 4, LCT_GREY, 8);
+	unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
+	const char* asd = lodepng_error_text(error1);
+	std::cout << asd << std::endl;
+//RELEASE
+	clReleaseMemObject(outputImage);
+	clReleaseMemObject(inputImage);
+
+	clReleaseCommandQueue(queue);
+
+	clReleaseKernel(kernel);
+	clReleaseProgram(program);
+
+	clReleaseContext(context);
 }
