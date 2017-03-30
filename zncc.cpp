@@ -6,37 +6,17 @@
 #include <fstream>
 #include <sstream>
 #include "lodepng.h"
+#define _CRT_SECURE_NO_DEPRECATE
 #define kernelpath "kernel.cl"
 #define IMAGE1 "im0.png";
 void CheckError(cl_int error)
 {
 	if (error != CL_SUCCESS) {
 		std::cerr << "OpenCL call failed with error " << error << std::endl;
-		
 
-			std::exit(1);
+
+		std::exit(1);
 	}
-}
-
-void decode(const char *filename, unsigned &width, unsigned &height, std::vector<unsigned char> &image) {
-	lodepng::decode(image, width, height, filename);
-}
-
-struct Image {
-
-	std::vector<unsigned char> pixel;
-	int height, width;
-};
-
-Image load_image(const char *filename) {
-	unsigned original_width, original_height;
-	std::vector<unsigned char> image = std::vector<unsigned char>();
-	decode(filename, original_width, original_height, image);
-	Image img;
-	img.height = original_height;
-	img.width = original_width;
-	img.pixel = image;
-	return img;
 }
 
 
@@ -92,7 +72,7 @@ std::string GetPlatformName(cl_platform_id id)
 
 
 int main(){
-//get platform
+	//get platform
 	cl_uint platformIdCount = 0;
 	clGetPlatformIDs(0, nullptr, &platformIdCount);
 
@@ -110,7 +90,7 @@ int main(){
 	for (cl_uint i = 0; i < platformIdCount; ++i) {
 		std::cout << "\t (" << (i + 1) << ") : " << GetPlatformName(platformIds[i]) << std::endl;
 	}
-//get devices
+	//get devices
 	cl_uint deviceIdCount = 0;
 	clGetDeviceIDs(platformIds[0], CL_DEVICE_TYPE_ALL, 0, nullptr,
 		&deviceIdCount);
@@ -130,7 +110,7 @@ int main(){
 	for (cl_uint i = 0; i < deviceIdCount; ++i) {
 		std::cout << "\t (" << (i + 1) << ") : " << GetDeviceName(deviceIds[i]) << std::endl;
 	}
-//context
+	//context
 	const cl_context_properties contextProperties[] =
 	{
 		CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties> (platformIds[0]),
@@ -144,10 +124,10 @@ int main(){
 
 	std::cout << "Context created" << std::endl;
 
-// Create a program from source
+	// Create a program from source
 	cl_program program = CreateProgram(LoadKernel(kernelpath),
 		context);
-	
+
 	error = clBuildProgram(program, deviceIdCount, deviceIds.data(),
 		nullptr, nullptr, nullptr);
 	// Shows the log
@@ -171,81 +151,62 @@ int main(){
 	unsigned char* image;
 	unsigned int width, height;
 	lodepng_decode32_file(&image, &width, &height, "im0.png");
-	//Image image= load_image("im0.png");
 	std::cout << "Image loaded" << std::endl;
-	
 	//input format
 	static const cl_image_format format = { CL_RGBA, CL_UNSIGNED_INT8 };
 	//output format
 	static const cl_image_format oformat = { CL_R, CL_UNSIGNED_INT8 };
 
-	
-	cl_image_desc desc;
- 
-	size_t h = height;
-	size_t w = width;
-	size_t d = 1;
-	size_t r = 0;//width * 4;
-	cl_mem_object_type mt = CL_MEM_OBJECT_IMAGE2D;
-	cl_uint mip = 0;
 
-	desc.image_type = mt ;
-	desc.image_width = w;
-	desc.image_height = h;
-	desc.image_depth = d;
-	desc.image_row_pitch = r;
-	desc.num_mip_levels = mip;
-	desc.buffer = NULL;
-	desc.num_samples = 0;
-	desc.image_slice_pitch = 0;
-	desc.image_array_size = 0;
 
-	
-	//inputimage
-	cl_mem inputImage = clCreateImage(context, CL_MEM_READ_ONLY|CL_MEM_ALLOC_HOST_PTR |CL_MEM_COPY_HOST_PTR, &format,
-		&desc,
+	//Input image
+	cl_mem inputImage = clCreateImage2D(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, &format,
+		width,
+		height,
+		0,
 		image,
 		&error);
 	CheckError(error);
-
-	desc.image_width = width / 4;
-	desc.image_height = height / 4;
-	cl_mem outputImage = clCreateImage(context, NULL, &oformat, &desc, NULL, &error);
+	//Output image
+	cl_mem outputImage = clCreateImage2D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, &oformat, width / 4, height / 4, 0, nullptr, &error);
 	CheckError(error);
 
-// Setup the kernel arguments
+	// Setup the kernel arguments
 	clSetKernelArg(kernel, 0, sizeof(cl_mem), &inputImage);
+
 	clSetKernelArg(kernel, 1, sizeof(cl_mem), &outputImage);
-//Command queue
-	cl_command_queue queue = clCreateCommandQueue(context, deviceIds[0],
+	//Command queue
+	cl_command_queue queue = clCreateCommandQueueWithProperties(context, deviceIds[0],
 		0, &error);
 	CheckError(error);
 
-	cl_uint work_dimension = 1;
+	cl_uint work_dimension = 2;
 	const size_t work_offset = 0;
-	const size_t global_worksize = { height*width };
-	const size_t local_worksize = {16};
+	const size_t global_worksize[2] = { width/4, height/4};
+	const size_t local_worksize = NULL;
 	const cl_event event_wait_list = NULL;
 	cl_uint num_events_in_wait_list = 0;
 	cl_event event = NULL;
 
-	CheckError(clEnqueueNDRangeKernel(queue, kernel, work_dimension, work_offset, &global_worksize, &local_worksize,
-		 num_events_in_wait_list, nullptr, &event));
+	CheckError(clEnqueueNDRangeKernel(queue, kernel, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
 
-//	unsigned char* result= (unsigned char*)malloc(735 * 504*4+1);
-	std::vector<uint8_t>output = std::vector<uint8_t>(width*height / 4);
-	
+	void barrier();
+	unsigned char* output= (unsigned char*)malloc(width * height*4+1);
+	//std::vector<unsigned char>output = std::vector<unsigned char>(width*height*4);
+
 	std::size_t origin[3] = { 0 };
 	std::size_t region[3] = { width/4, height/4, 1 };
 	clEnqueueReadImage(queue, outputImage, CL_TRUE,
 		origin, region, 0, 0,
-		&output[0], 0, nullptr, nullptr);
-	
-	//unsigned error3 = lodepng_encode_file("test.png", result, width / 4, height / 4, LCT_GREY, 8);
-	unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
+		output, 0, NULL, NULL);
+
+	unsigned error1 = lodepng_encode_file("test.png", output, width/4, height/4, LCT_GREY, 8);
+	//unsigned error1 = lodepng::encode("test.png", output, width, height);
 	const char* asd = lodepng_error_text(error1);
 	std::cout << asd << std::endl;
-//RELEASE
+	//RELEASE
+	free(output);
 	clReleaseMemObject(outputImage);
 	clReleaseMemObject(inputImage);
 
