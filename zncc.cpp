@@ -148,9 +148,11 @@ int main(){
 	build_log[log_size] = '\0';
 	std::cout << build_log << std::endl;
 	delete[] build_log;
-
+//kernel
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateKernel.html
 	cl_kernel gskernel = clCreateKernel(program, "resizeandgreyscale", &error);
+	CheckError(error);
+	cl_kernel zncc_left = clCreateKernel(program, "zncc_left", &error);
 	CheckError(error);
 	std::cout << "kernel created" << std::endl;
 
@@ -223,7 +225,18 @@ int main(){
 	//release original image2
 	clReleaseMemObject(inputImage2);
 
+//zncc left
+	std::cout << "zncc left" << std::endl;
+	cl_mem disp_left = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width/4, height/4, 0, nullptr, &error);
+	CheckError(error);
 
+	clSetKernelArg(zncc_left, 0, sizeof(cl_mem), &greyscale1);
+	clSetKernelArg(zncc_left, 1, sizeof(cl_mem), &greyscale2);
+	clSetKernelArg(zncc_left, 2, sizeof(cl_mem), &disp_left);
+
+	CheckError(clEnqueueNDRangeKernel(queue, zncc_left, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
 
 
 
@@ -234,7 +247,7 @@ int main(){
 	unsigned char* output = (unsigned char*)malloc(735 * 504 * 4 + 1);
 	std::size_t origin[3] = { 0 };
 	std::size_t region[3] = { width / 4, height / 4, 1 };
-	clEnqueueReadImage(queue, greyscale2, CL_TRUE,
+	clEnqueueReadImage(queue, disp_left, CL_TRUE,
 		origin, region, 0, 0,
 		output, 0, NULL, NULL);
 //encode image for test purposes
@@ -246,7 +259,10 @@ int main(){
 	
 	free(output);
 	clReleaseMemObject(greyscale1);
-
+	clReleaseMemObject(greyscale2);
+	
+	clReleaseMemObject(disp_left);
+	
 
 	clReleaseCommandQueue(queue);
 

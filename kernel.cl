@@ -42,20 +42,23 @@ float mean1=0,mean2=0;
 float std1=0,std2=0;
 float z=0, zncc=0, max_sum=0;
 
-
-int2 coord = {x,y};
 int2 coord2 = {x+4, y+4};
 
+float4 temp;
+int temp2;
+float temp3;
 for(d=0;d<=ndisp;d=d+1){
 	//mean loop
+	
 	for(i=y;i<=y+window;i=i+1){
 		for(j=x;j<=x+window;j=j+1){
                             //get mean
 
                             //img2
-							
-                            mean1=mean1+read_imagei(greyscale1,sampler,{i,j});      
-                            mean2=mean2+read_imagei(greyscale2,sampler,{i-d,j});
+											
+			
+            mean1=mean1+read_imageui(greyscale1,sampler, (int2) { i, j }).x;
+            mean2=mean2+read_imageui(greyscale2,sampler,(int2){i-d,j}).x;
                             
                         }
 						}
@@ -63,22 +66,29 @@ for(d=0;d<=ndisp;d=d+1){
 		mean2=mean2/window;
 	for(i=y;i<=y+window;i=i+1){
 		for(j=x;j<=x+window;j=j+1){
-                            std1=std1+(read_imagei(greyscale1,sampler,{i,j})-mean1)*(read_imagei(greyscale1,sampler,{i,j})-mean1);
-                            std2=std2+(read_imagei(greyscale2,sampler,{i-d,j})-mean2)*(read_imagei(greyscale2,sampler,{i-d,j})-mean2);
+                            std1=std1+(read_imageui(greyscale1,sampler,(int2){i,j}).x-mean1)*(read_imageui(greyscale1,sampler, (int2) {i,j}).x-mean1);
+                            std2=std2+(read_imageui(greyscale2,sampler, (int2) {i-d,j}).x-mean2)*(read_imageui(greyscale2,sampler, (int2) {i-d,j}).x-mean2);
                         
-                            z=z+((read_imagei(greyscale1,sampler,{i,j})-mean1)*(read_imagei(greyscale2,sampler,{i-d,j})-mean2));
+                            z=z+((read_imageui(greyscale1,sampler, (int2) {i,j}).x-mean1)*(read_imageui(greyscale2,sampler, (int2) {i-d,j}).x-mean2));
                             
                         }
 						}
-						                //img1
+	
+	//img1
                 std1=native_sqrt(std1/window);
                 std2=native_sqrt(std2/window);
                 zncc=z/(std1*std2);
 
+				//temp3 = (read_imageui(greyscale1, sampler, (int2){ i, j }).x);
+				//temp3 = temp.x;
+
+				
+				//printf(" %f \n", std1);
                 
-                
+				
                 if(zncc>max_sum){
                 //img1
+					printf("if %f ", max_sum);
                 max_sum=zncc;
                 best_d=d;
                 }
