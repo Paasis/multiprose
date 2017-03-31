@@ -154,6 +154,12 @@ int main(){
 	CheckError(error);
 	cl_kernel zncc_left = clCreateKernel(program, "zncc_left", &error);
 	CheckError(error);
+	cl_kernel zncc_right = clCreateKernel(program, "zncc_right", &error);
+	CheckError(error);
+	cl_kernel post_process = clCreateKernel(program, "post_process", &error);
+	CheckError(error);
+	cl_kernel occlusion = clCreateKernel(program, "occlusion", &error);
+	CheckError(error);
 	std::cout << "kernel created" << std::endl;
 
 //image
@@ -239,30 +245,69 @@ int main(){
 		num_events_in_wait_list, nullptr, &event));
 
 
+//zncc right
+	std::cout << "zncc right" << std::endl;
+	cl_mem disp_right = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width / 4, height / 4, 0, nullptr, &error);
+	CheckError(error);
+	//järjestys
+	clSetKernelArg(zncc_right, 0, sizeof(cl_mem), &greyscale2);
+	clSetKernelArg(zncc_right, 1, sizeof(cl_mem), &greyscale1);
+	clSetKernelArg(zncc_right, 2, sizeof(cl_mem), &disp_right);
+
+	CheckError(clEnqueueNDRangeKernel(queue, zncc_right, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
 
 
+	clReleaseMemObject(greyscale1);
+	clReleaseMemObject(greyscale2);
 
+
+//post process
+	std::cout << "post process" << std::endl;
+	cl_mem processed = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width / 4, height / 4, 0, nullptr, &error);
+	CheckError(error);
+	//järjestys
+	clSetKernelArg(post_process, 0, sizeof(cl_mem), &disp_left);
+	clSetKernelArg(post_process, 1, sizeof(cl_mem), &disp_right);
+	clSetKernelArg(post_process, 2, sizeof(cl_mem), &processed);
+
+	CheckError(clEnqueueNDRangeKernel(queue, post_process, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
+
+//occlusion
+	std::cout << "occlusion filling" << std::endl;
+	cl_mem final_image = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width / 4, height / 4, 0, nullptr, &error);
+	CheckError(error);
+	//järjestys
+	clSetKernelArg(occlusion, 0, sizeof(cl_mem), &processed);
+	clSetKernelArg(occlusion, 1, sizeof(cl_mem), &final_image);
+
+	CheckError(clEnqueueNDRangeKernel(queue, occlusion, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
 
 //readimage
 	unsigned char* output = (unsigned char*)malloc(735 * 504 * 4 + 1);
 	std::size_t origin[3] = { 0 };
 	std::size_t region[3] = { width / 4, height / 4, 1 };
-	clEnqueueReadImage(queue, disp_left, CL_TRUE,
+	clEnqueueReadImage(queue, final_image, CL_TRUE,
 		origin, region, 0, 0,
 		output, 0, NULL, NULL);
 //encode image for test purposes
-	unsigned error3 = lodepng_encode_file("test.png", output, width / 4, height / 4, LCT_GREY, 8);
+	unsigned error3 = lodepng_encode_file("test1.png", output, width / 4, height / 4, LCT_GREY, 8);
 	//unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
 	const char* asd = lodepng_error_text(error3);
 	std::cout << asd << std::endl;
 //RELEASE
 	
 	free(output);
-	clReleaseMemObject(greyscale1);
-	clReleaseMemObject(greyscale2);
+
 	
 	clReleaseMemObject(disp_left);
-	
+	clReleaseMemObject(disp_right);
+
 
 	clReleaseCommandQueue(queue);
 
