@@ -41,12 +41,10 @@ unsigned int i,j,d,best_d=0;
 float mean1=0,mean2=0;
 float std1=0,std2=0;
 float z=0, zncc=0, max_sum=0;
-
+int2 coord = { x,y };
 int2 coord2 = {x+4, y+4};
 
-float4 temp;
-int temp2;
-float temp3;
+
 for(d=0;d<=ndisp;d=d+1){
 	//mean loop
 	
@@ -57,11 +55,14 @@ for(d=0;d<=ndisp;d=d+1){
                             //img2
 											
 			
-            mean1=mean1+read_imageui(greyscale1,sampler, (int2) { i, j }).x;
-            mean2=mean2+read_imageui(greyscale2,sampler,(int2){i-d,j}).x;
-                            
+            mean1=mean1+(float)read_imageui(greyscale1,sampler, (int2) { i, j }).x;
+            mean2=mean2+(float)read_imageui(greyscale2,sampler,(int2){i-d,j}).x;
+			
+		//	printf(" %f \n", mean1);
+
                         }
 						}
+	
 		mean1=mean1/window;
 		mean2=mean2/window;
 	for(i=y;i<=y+window;i=i+1){
@@ -83,16 +84,23 @@ for(d=0;d<=ndisp;d=d+1){
 				//temp3 = temp.x;
 
 				
-				//printf(" %f \n", std1);
+				
                 
 				
                 if(zncc>max_sum){
                 //img1
-					printf("if %f ", max_sum);
+					//printf("if %d\n ", best_d);
                 max_sum=zncc;
                 best_d=d;
                 }
-
+				//Resets the values for the next d cycle
+				//img1
+				mean1 = 0;
+				mean2 = 0;
+				std1 = 0;
+				std2 = 0;
+				zncc = 0;
+				z = 0;
 	}
-       write_imageui(dispLeft,coord2,best_d);  
+       write_imageui(dispLeft,coord,best_d);  
 }
