@@ -10,6 +10,14 @@
 #define image1_path "im0.png"
 #define image2_path "im1.png"
 
+
+//
+//Ville Kemppainen & Mikko Paasimaa
+//Working implementation without optimisation
+//Bad commentry
+//
+
+
 void CheckError(cl_int error)
 {
 	if (error != CL_SUCCESS) {
@@ -181,6 +189,7 @@ int main(){
 	
 	free(image);
 //create greyscale imageobjects
+	std::cout << "Greysize 1" << std::endl;
 	cl_mem greyscale1 = clCreateImage2D(context, CL_MEM_WRITE_ONLY| CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width/4, height/4, 0, nullptr, &error);
 
@@ -189,6 +198,7 @@ int main(){
 	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage);
 	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale1);
 //Command queue
+
 	cl_command_queue queue = clCreateCommandQueueWithProperties(context, deviceIds[0],
 		0, &error);
 	CheckError(error);
@@ -207,6 +217,7 @@ int main(){
 		 num_events_in_wait_list, nullptr, &event));
 	//release original image
 	clReleaseMemObject(inputImage);
+
 	//read image 2 
 	unsigned char* image2;
 	
@@ -276,6 +287,8 @@ int main(){
 	CheckError(clEnqueueNDRangeKernel(queue, post_process, work_dimension, work_offset, global_worksize, local_worksize,
 		num_events_in_wait_list, nullptr, &event));
 
+	clReleaseMemObject(disp_left); 
+	clReleaseMemObject(disp_right);
 //occlusion
 	std::cout << "occlusion filling" << std::endl;
 	cl_mem final_image = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
@@ -285,6 +298,7 @@ int main(){
 	clSetKernelArg(occlusion, 0, sizeof(cl_mem), &processed);
 	clSetKernelArg(occlusion, 1, sizeof(cl_mem), &final_image);
 
+	clReleaseMemObject(processed);
 	CheckError(clEnqueueNDRangeKernel(queue, occlusion, work_dimension, work_offset, global_worksize, local_worksize,
 		num_events_in_wait_list, nullptr, &event));
 
@@ -300,18 +314,23 @@ int main(){
 	//unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
 	const char* asd = lodepng_error_text(error3);
 	std::cout << asd << std::endl;
+
 //RELEASE
 	
 	free(output);
-
+	clReleaseMemObject(final_image);
 	
-	clReleaseMemObject(disp_left);
-	clReleaseMemObject(disp_right);
+
 
 
 	clReleaseCommandQueue(queue);
 
 	clReleaseKernel(gskernel);
+	clReleaseKernel(zncc_left);
+	clReleaseKernel(zncc_right);
+	clReleaseKernel(post_process);
+	clReleaseKernel(occlusion);
+
 	clReleaseProgram(program);
 
 	clReleaseContext(context);

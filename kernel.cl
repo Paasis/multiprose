@@ -1,3 +1,11 @@
+//
+//Ville Kemppainen & Mikko Paasimaa
+//Working implementation without optimisation
+//Bad commentry
+//
+
+
+
 
 __constant sampler_t sampler =
   CLK_NORMALIZED_COORDS_FALSE
@@ -6,8 +14,8 @@ __constant sampler_t sampler =
 
 
 
-
-
+//*************************************************************************************************************************
+//Kernel for resizing and greyscaling image
 __kernel void resizeandgreyscale(__read_only image2d_t input,
 								__write_only image2d_t output)
 {
@@ -28,6 +36,8 @@ uint grey = (uint) (pixel.x * 0.2126 + pixel.y * 0.7152 + pixel.z * 0.0722);
 write_imageui(output ,coord2 , grey);
 }
 
+
+//*************************************************************************************************************************
 //Kernel for zncc on left image
 __kernel void zncc_left(__read_only image2d_t greyscale1,
 								__read_only image2d_t greyscale2,
@@ -63,8 +73,8 @@ for(d=0;d<=ndisp;d=d+1){
                         }
 						}
 	
-		mean1=mean1/window;
-		mean2=mean2/window;
+		mean1=mean1/(window);
+		mean2=mean2/(window);
 	for(j=y;j<=y+window;j=j+1){
 		for(i=x;i<=x+window;i=i+1){
                             std1=std1+(read_imageui(greyscale1,sampler,(int2){i,j}).x-mean1)*(read_imageui(greyscale1,sampler, (int2) {i,i}).x-mean1);
@@ -106,9 +116,7 @@ for(d=0;d<=ndisp;d=d+1){
 }
 
 
-//************************************************************************************************************************
-
-
+//*************************************************************************************************************************
 //Kernel for zncc on right image
 __kernel void zncc_right(__read_only image2d_t greyscale1,
 								__read_only image2d_t greyscale2,
@@ -181,8 +189,7 @@ for(d=0;d<=ndisp;d=d+1){
 }
 
 
-//***************************************************************************************
-
+//*************************************************************************************************************************
 //post process
 __kernel void post_process(__read_only image2d_t disp_left,
 								__read_only image2d_t disp_right,
@@ -192,7 +199,7 @@ __kernel void post_process(__read_only image2d_t disp_left,
 	int y = get_global_id(1);
 
 
-	uint threshold=24;
+	uint threshold=16;
 	int2 coord = {x, y};
 
 	if(abs(read_imageui(disp_left, sampler, coord).x - read_imageui(disp_right, sampler, (int2){x - read_imageui(disp_left, sampler, coord).x, y}).x) > (uint)threshold)
@@ -206,8 +213,7 @@ __kernel void post_process(__read_only image2d_t disp_left,
 }
 
 
-//***************************************************************************************
-
+//*************************************************************************************************************************
 //occlusion filling
 __kernel void occlusion(__read_only image2d_t processed,
 						__write_only image2d_t final_image)
