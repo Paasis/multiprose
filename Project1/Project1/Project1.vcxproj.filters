@@ -40,6 +40,9 @@
     <None Include="copy.cl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="kernel.cl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lodepng.h">

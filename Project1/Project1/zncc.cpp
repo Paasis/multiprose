@@ -6,37 +6,32 @@
 #include <fstream>
 #include <sstream>
 #include "lodepng.h"
-#define kernelpath "hello.cl"
-#define IMAGE1 "im0.png";
+#define kernelpath "kernel.cl"
+#define image1_path "im0.png"
+#define image2_path "im1.png"
+
+
+//
+//Ville Kemppainen & Mikko Paasimaa
+//Working implementation without optimisation
+//Bad commentry
+//
+
+
 void CheckError(cl_int error)
 {
 	if (error != CL_SUCCESS) {
 		std::cerr << "OpenCL call failed with error " << error << std::endl;
 		
 
-		std::exit(1);
+			std::exit(1);
 	}
 }
 
-void decode(const char *filename, unsigned &width, unsigned &height, std::vector<unsigned char> &image) {
-	lodepng::decode(image, width, height, filename);
-}
 
-struct Image {
-	int height, width;
-	std::vector<unsigned char> pixel;
-};
 
-Image load_image(const char *filename) {
-	unsigned original_width, original_height;
-	std::vector<unsigned char> image = std::vector<unsigned char>();
-	decode(filename, original_width, original_height, image);
-	Image img;
-	img.height = original_height;
-	img.width = original_width;
-	img.pixel = image;
-	return img;
-}
+
+
 
 
 cl_program CreateProgram(const std::string& source,
@@ -88,6 +83,7 @@ std::string GetPlatformName(cl_platform_id id)
 
 	return result;
 }
+
 
 
 int main(){
@@ -144,12 +140,8 @@ int main(){
 	std::cout << "Context created" << std::endl;
 
 // Create a program from source
-	
-	
 	cl_program program = CreateProgram(LoadKernel(kernelpath),
 		context);
-	
-
 	
 	error = clBuildProgram(program, deviceIdCount, deviceIds.data(),
 		nullptr, nullptr, nullptr);
@@ -164,23 +156,182 @@ int main(){
 	build_log[log_size] = '\0';
 	std::cout << build_log << std::endl;
 	delete[] build_log;
-
+//kernel
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateKernel.html
-	cl_kernel kernel = clCreateKernel(program, "hello", &error);
+	cl_kernel gskernel = clCreateKernel(program, "resizeandgreyscale", &error);
+	CheckError(error);
+	cl_kernel zncc_left = clCreateKernel(program, "zncc_left", &error);
+	CheckError(error);
+	cl_kernel zncc_right = clCreateKernel(program, "zncc_right", &error);
+	CheckError(error);
+	cl_kernel post_process = clCreateKernel(program, "post_process", &error);
+	CheckError(error);
+	cl_kernel occlusion = clCreateKernel(program, "occlusion", &error);
 	CheckError(error);
 	std::cout << "kernel created" << std::endl;
 
-	//image
-
-	Image image= load_image("im0.png");
+//image
+	unsigned char* image;
+	unsigned int width, height;
+	lodepng_decode32_file(&image, &width, &height, image1_path);
+	//Image image= load_image("im0.png");
 	std::cout << "Image loaded" << std::endl;
-	static const cl_image_format format = { CL_RGBA, CL_UNSIGNED_INT32 };
-	cl_mem inputImage = clCreateImage2D(context, CL_MEM_READ_ONLY|CL_MEM_ALLOC_HOST_PTR |CL_MEM_COPY_HOST_PTR, &format,
-		image.width, image.height, 0,
-		const_cast <unsigned char*> (image.pixel.data()),
-		&error);
+//input format
+	static const cl_image_format format = { CL_RGBA, CL_UNSIGNED_INT8 };
+//output format
+	static const cl_image_format oformat = { CL_R, CL_UNSIGNED_INT8 };
+	
+	
+//input image
+	cl_mem inputImage = clCreateImage2D(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR,
+		&format, width, height, 0, image, &error);
+	CheckError(error);
+	
+	free(image);
+//create greyscale imageobjects
+	std::cout << "Greysize 1" << std::endl;
+	cl_mem greyscale1 = clCreateImage2D(context, CL_MEM_WRITE_ONLY| CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width/4, height/4, 0, nullptr, &error);
+
+
+// Setup the kernel arguments
+	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage);
+	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale1);
+//Command queue
+
+	cl_command_queue queue = clCreateCommandQueueWithProperties(context, deviceIds[0],
+		0, &error);
 	CheckError(error);
 
+//Kernel
+	cl_uint work_dimension = 2;
+	const size_t work_offset = 0;
+	const size_t global_worksize[2] = { width/4,height/4 };
+	const size_t local_worksize = NULL;
+	const cl_event event_wait_list = NULL;
+	cl_uint num_events_in_wait_list = 0;
+	cl_event event = NULL;
+
+	
+	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
+		 num_events_in_wait_list, nullptr, &event));
+	//release original image
+	clReleaseMemObject(inputImage);
+
+	//read image 2 
+	unsigned char* image2;
+	
+	lodepng_decode32_file(&image2, &width, &height, image2_path);
+
+	std::cout << "Image2 loaded" << std::endl;
+	//load image 2 to imageobject
+	cl_mem inputImage2 = clCreateImage2D(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR,
+		&format, width, height, 0, image2, &error);
+	CheckError(error);
+
+	free(image2);
+	cl_mem greyscale2 = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width / 4, height / 4, 0, nullptr, &error);
+
+	// Setup the kernel arguments again
+	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage2);
+	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale2);
+	//run kernel again
+	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
+	//release original image2
+	clReleaseMemObject(inputImage2);
+
+//zncc left
+	std::cout << "zncc left" << std::endl;
+	cl_mem disp_left = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width/4, height/4, 0, nullptr, &error);
+	CheckError(error);
+
+	clSetKernelArg(zncc_left, 0, sizeof(cl_mem), &greyscale1);
+	clSetKernelArg(zncc_left, 1, sizeof(cl_mem), &greyscale2);
+	clSetKernelArg(zncc_left, 2, sizeof(cl_mem), &disp_left);
+
+	CheckError(clEnqueueNDRangeKernel(queue, zncc_left, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
 
 
+//zncc right
+	std::cout << "zncc right" << std::endl;
+	cl_mem disp_right = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width / 4, height / 4, 0, nullptr, &error);
+	CheckError(error);
+	//järjestys
+	clSetKernelArg(zncc_right, 0, sizeof(cl_mem), &greyscale2);
+	clSetKernelArg(zncc_right, 1, sizeof(cl_mem), &greyscale1);
+	clSetKernelArg(zncc_right, 2, sizeof(cl_mem), &disp_right);
+
+	CheckError(clEnqueueNDRangeKernel(queue, zncc_right, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
+
+
+	clReleaseMemObject(greyscale1);
+	clReleaseMemObject(greyscale2);
+
+
+//post process
+	std::cout << "post process" << std::endl;
+	cl_mem processed = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width / 4, height / 4, 0, nullptr, &error);
+	CheckError(error);
+	//järjestys
+	clSetKernelArg(post_process, 0, sizeof(cl_mem), &disp_left);
+	clSetKernelArg(post_process, 1, sizeof(cl_mem), &disp_right);
+	clSetKernelArg(post_process, 2, sizeof(cl_mem), &processed);
+
+	CheckError(clEnqueueNDRangeKernel(queue, post_process, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
+
+	clReleaseMemObject(disp_left); 
+	clReleaseMemObject(disp_right);
+//occlusion
+	std::cout << "occlusion filling" << std::endl;
+	cl_mem final_image = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+		&oformat, width / 4, height / 4, 0, nullptr, &error);
+	CheckError(error);
+	//järjestys
+	clSetKernelArg(occlusion, 0, sizeof(cl_mem), &processed);
+	clSetKernelArg(occlusion, 1, sizeof(cl_mem), &final_image);
+
+	clReleaseMemObject(processed);
+	CheckError(clEnqueueNDRangeKernel(queue, occlusion, work_dimension, work_offset, global_worksize, local_worksize,
+		num_events_in_wait_list, nullptr, &event));
+
+//readimage
+	unsigned char* output = (unsigned char*)malloc(735 * 504 * 4 + 1);
+	std::size_t origin[3] = { 0 };
+	std::size_t region[3] = { width / 4, height / 4, 1 };
+	clEnqueueReadImage(queue, final_image, CL_TRUE,
+		origin, region, 0, 0,
+		output, 0, NULL, NULL);
+//encode image for test purposes
+	unsigned error3 = lodepng_encode_file("test1.png", output, width / 4, height / 4, LCT_GREY, 8);
+	//unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
+	const char* asd = lodepng_error_text(error3);
+	std::cout << asd << std::endl;
+
+//RELEASE
+	
+	free(output);
+	clReleaseMemObject(final_image);
+	
+
+
+
+	clReleaseCommandQueue(queue);
+
+	clReleaseKernel(gskernel);
+	clReleaseKernel(zncc_left);
+	clReleaseKernel(zncc_right);
+	clReleaseKernel(post_process);
+	clReleaseKernel(occlusion);
+
+	clReleaseProgram(program);
+
+	clReleaseContext(context);
 }
