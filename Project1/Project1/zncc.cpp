@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include "lodepng.h"
+#include <time.h>
 #define kernelpath "kernel.cl"
 #define image1_path "im0.png"
 #define image2_path "im1.png"
@@ -84,9 +85,26 @@ std::string GetPlatformName(cl_platform_id id)
 	return result;
 }
 
+void Time(cl_event event)
+{
+	//variable initiation
+	//timing
+	cl_ulong time_start, time_end;
+	double total_time;
+	//timing
+	clWaitForEvents(1, &event);
+	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
+	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
+	total_time = time_end - time_start;
+	printf("Execution time in milliseconds = %0.3f ms\n", (total_time / 1000000.0));
+
+}
+
 
 
 int main(){
+
+	std::cout << "Run time log:" << std::endl;
 //get platform
 	cl_uint platformIdCount = 0;
 	clGetPlatformIDs(0, nullptr, &platformIdCount);
@@ -156,6 +174,13 @@ int main(){
 	build_log[log_size] = '\0';
 	std::cout << build_log << std::endl;
 	delete[] build_log;
+
+
+//Execution timer start
+	clock_t t1, t2;
+	t1 = clock();
+
+
 //kernel
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateKernel.html
 	cl_kernel gskernel = clCreateKernel(program, "resizeandgreyscale", &error);
@@ -199,10 +224,14 @@ int main(){
 	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale1);
 //Command queue
 
+	//const cl_queue_properties prop = CL_QUEUE_PROFILING_ENABLE;
+	cl_command_queue queue = clCreateCommandQueue(context, deviceIds[0], CL_QUEUE_PROFILING_ENABLE, &error);
+
+	/*
 	cl_command_queue queue = clCreateCommandQueueWithProperties(context, deviceIds[0],
 		0, &error);
 	CheckError(error);
-
+	*/
 //Kernel
 	cl_uint work_dimension = 2;
 	const size_t work_offset = 0;
@@ -210,13 +239,15 @@ int main(){
 	const size_t local_worksize = NULL;
 	const cl_event event_wait_list = NULL;
 	cl_uint num_events_in_wait_list = 0;
-	cl_event event = NULL;
+	cl_event gskernel_event;
 
 	
 	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
-		 num_events_in_wait_list, nullptr, &event));
+		 num_events_in_wait_list, nullptr, &gskernel_event));
 	//release original image
 	clReleaseMemObject(inputImage);
+
+	
 
 	//read image 2 
 	unsigned char* image2;
@@ -238,7 +269,7 @@ int main(){
 	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale2);
 	//run kernel again
 	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &event));
+		num_events_in_wait_list, nullptr, &gskernel_event));
 	//release original image2
 	clReleaseMemObject(inputImage2);
 
@@ -251,9 +282,12 @@ int main(){
 	clSetKernelArg(zncc_left, 0, sizeof(cl_mem), &greyscale1);
 	clSetKernelArg(zncc_left, 1, sizeof(cl_mem), &greyscale2);
 	clSetKernelArg(zncc_left, 2, sizeof(cl_mem), &disp_left);
+	
+	cl_event zncc_left_event;
 
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_left, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &event));
+		num_events_in_wait_list, nullptr, &zncc_left_event));
+	
 
 
 //zncc right
@@ -265,9 +299,10 @@ int main(){
 	clSetKernelArg(zncc_right, 0, sizeof(cl_mem), &greyscale2);
 	clSetKernelArg(zncc_right, 1, sizeof(cl_mem), &greyscale1);
 	clSetKernelArg(zncc_right, 2, sizeof(cl_mem), &disp_right);
+	cl_event zncc_right_event;
 
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_right, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &event));
+		num_events_in_wait_list, nullptr, &zncc_right_event));
 
 
 	clReleaseMemObject(greyscale1);
@@ -284,11 +319,15 @@ int main(){
 	clSetKernelArg(post_process, 1, sizeof(cl_mem), &disp_right);
 	clSetKernelArg(post_process, 2, sizeof(cl_mem), &processed);
 
+	cl_event post_process_event;
 	CheckError(clEnqueueNDRangeKernel(queue, post_process, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &event));
+		num_events_in_wait_list, nullptr, &post_process_event));
+
 
 	clReleaseMemObject(disp_left); 
 	clReleaseMemObject(disp_right);
+
+
 //occlusion
 	std::cout << "occlusion filling" << std::endl;
 	cl_mem final_image = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
@@ -299,10 +338,13 @@ int main(){
 	clSetKernelArg(occlusion, 1, sizeof(cl_mem), &final_image);
 
 	clReleaseMemObject(processed);
+	
+	cl_event occlusion_event;
 	CheckError(clEnqueueNDRangeKernel(queue, occlusion, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &event));
+		num_events_in_wait_list, nullptr, &occlusion_event));
 
 //readimage
+	std::cout << "Reading image" << std::endl;
 	unsigned char* output = (unsigned char*)malloc(735 * 504 * 4 + 1);
 	std::size_t origin[3] = { 0 };
 	std::size_t region[3] = { width / 4, height / 4, 1 };
@@ -310,10 +352,24 @@ int main(){
 		origin, region, 0, 0,
 		output, 0, NULL, NULL);
 //encode image for test purposes
+	std::cout << "Creating final image" << std::endl;
 	unsigned error3 = lodepng_encode_file("test1.png", output, width / 4, height / 4, LCT_GREY, 8);
 	//unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
 	const char* asd = lodepng_error_text(error3);
 	std::cout << asd << std::endl;
+
+//Time kernels 
+	std::cout << "\nPost execution log:" << std::endl;
+	std::cout << "Greyscale and resize kernel:" << std::endl;
+	Time(gskernel_event);
+	std::cout << "Zncc_left kernel:" << std::endl;
+	Time(zncc_left_event);
+	std::cout << "Zncc_right kernel:" << std::endl;
+	Time(zncc_right_event);
+	std::cout << "Postprocess kernel:" << std::endl;
+	Time(post_process_event);
+	std::cout << "Occlusion kernel:" << std::endl;
+	Time(occlusion_event);
 
 //RELEASE
 	
@@ -324,7 +380,7 @@ int main(){
 
 
 	clReleaseCommandQueue(queue);
-
+	
 	clReleaseKernel(gskernel);
 	clReleaseKernel(zncc_left);
 	clReleaseKernel(zncc_right);
@@ -334,4 +390,10 @@ int main(){
 	clReleaseProgram(program);
 
 	clReleaseContext(context);
+
+	t2 = clock();
+	float diff(((float)t2 - (float)t1) / CLOCKS_PER_SEC);
+	std::cout << "Total execution time:"<< diff <<"s" << std::endl;
+
+
 }

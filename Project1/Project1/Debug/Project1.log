@@ -1,42 +1,34 @@
-﻿Build started 31.3.2017 15:44:32.
-     1>Project "C:\Users\mpaasima\Downloads\multiprose\Project1\Project1\Project1.vcxproj" on node 2 (Rebuild target(s)).
+﻿Build started 5.4.2017 11:02:49.
+     1>Project "C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Project1\Project1.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP SDK\3.0\\include" /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt lodepng.cpp zncc.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP SDK\3.0\\include" /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt zncc.cpp
          zncc.cpp
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(186): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(98): warning C4244: '=' : conversion from 'cl_ulong' to 'double', possible loss of data
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(212): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(193): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(219): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(228): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(228): warning C4996: 'clCreateCommandQueue': was declared deprecated
+                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1359) : see declaration of 'clCreateCommandQueue'
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(260): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(233): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(265): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(247): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(279): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(261): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(296): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(279): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(315): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\zncc.cpp(294): warning C4996: 'clCreateImage2D': was declared deprecated
+     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(334): warning C4996: 'clCreateImage2D': was declared deprecated
                  c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-         lodepng.cpp
-         Generating Code...
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP SDK\3.0\\include" /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt opencl.c
-         opencl.c
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(51): warning C4013: 'malloc' undefined; assuming extern returning int
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(59): warning C4013: 'free' undefined; assuming extern returning int
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(62): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(72): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(42): warning C4101: 'c_units' : unreferenced local variable
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(45): warning C4101: 'group_size' : unreferenced local variable
-     1>c:\users\mpaasima\downloads\multiprose\project1\project1\opencl.c(46): warning C4101: 'item_sizes' : unreferenced local variable
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\AMD APP SDK\3.0\\lib\x86" OpenCL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.lib" /MACHINE:X86 Debug\lodepng.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\AMD APP SDK\3.0\\lib\x86" OpenCL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.lib" /MACHINE:X86 Debug\lodepng.obj
          Debug\opencl.obj
          Debug\zncc.obj
-         Project1.vcxproj -> C:\Users\mpaasima\Downloads\multiprose\Project1\Debug\Project1.exe
-     1>Done Building Project "C:\Users\mpaasima\Downloads\multiprose\Project1\Project1\Project1.vcxproj" (Rebuild target(s)).
+         Project1.vcxproj -> C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.exe
+     1>Done Building Project "C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Project1\Project1.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.27
+Time Elapsed 00:00:00.66
