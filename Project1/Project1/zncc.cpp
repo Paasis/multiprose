@@ -11,6 +11,8 @@
 #define image1_path "im0.png"
 #define image2_path "im1.png"
 
+#define DEVICE  CL_DEVICE_TYPE_ALL
+
 
 //
 //Ville Kemppainen & Mikko Paasimaa
@@ -104,7 +106,7 @@ void Time(cl_event event)
 
 int main(){
 
-	std::cout << "Run time log:" << std::endl;
+	
 //get platform
 	cl_uint platformIdCount = 0;
 	clGetPlatformIDs(0, nullptr, &platformIdCount);
@@ -125,7 +127,7 @@ int main(){
 	}
 //get devices
 	cl_uint deviceIdCount = 0;
-	clGetDeviceIDs(platformIds[0], CL_DEVICE_TYPE_ALL, 0, nullptr,
+	clGetDeviceIDs(platformIds[0], DEVICE, 0, nullptr,
 		&deviceIdCount);
 
 	if (deviceIdCount == 0) {
@@ -137,12 +139,13 @@ int main(){
 	}
 
 	std::vector<cl_device_id> deviceIds(deviceIdCount);
-	clGetDeviceIDs(platformIds[0], CL_DEVICE_TYPE_ALL, deviceIdCount,
+	clGetDeviceIDs(platformIds[0], DEVICE, deviceIdCount,
 		deviceIds.data(), nullptr);
 
 	for (cl_uint i = 0; i < deviceIdCount; ++i) {
 		std::cout << "\t (" << (i + 1) << ") : " << GetDeviceName(deviceIds[i]) << std::endl;
 	}
+	std::cout << "Run time log:" << std::endl;
 //context
 	const cl_context_properties contextProperties[] =
 	{
@@ -163,7 +166,9 @@ int main(){
 	
 	error = clBuildProgram(program, deviceIdCount, deviceIds.data(),
 		nullptr, nullptr, nullptr);
-	// Shows the log
+	
+	/*
+// Shows the log
 	char* build_log;
 	size_t log_size;
 	// First call to know the proper size
@@ -174,7 +179,7 @@ int main(){
 	build_log[log_size] = '\0';
 	std::cout << build_log << std::endl;
 	delete[] build_log;
-
+	*/
 
 //Execution timer start
 	clock_t t1, t2;
@@ -219,9 +224,7 @@ int main(){
 		&oformat, width/4, height/4, 0, nullptr, &error);
 
 
-// Setup the kernel arguments
-	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage);
-	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale1);
+
 //Command queue
 
 	//const cl_queue_properties prop = CL_QUEUE_PROFILING_ENABLE;
@@ -237,11 +240,14 @@ int main(){
 	const size_t work_offset = 0;
 	const size_t global_worksize[2] = { width/4,height/4 };
 	const size_t local_worksize = NULL;
-	const cl_event event_wait_list = NULL;
+	const cl_event event_wait_list=NULL;
 	cl_uint num_events_in_wait_list = 0;
 	cl_event gskernel_event;
 
-	
+	// Setup the kernel arguments
+	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage);
+	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale1);
+
 	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
 		 num_events_in_wait_list, nullptr, &gskernel_event));
 	//release original image
@@ -286,7 +292,7 @@ int main(){
 	cl_event zncc_left_event;
 
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_left, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &zncc_left_event));
+		1, &gskernel_event, &zncc_left_event));
 	
 
 
@@ -302,7 +308,7 @@ int main(){
 	cl_event zncc_right_event;
 
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_right, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &zncc_right_event));
+		1, &zncc_left_event, &zncc_right_event));
 
 
 	clReleaseMemObject(greyscale1);
@@ -321,7 +327,7 @@ int main(){
 
 	cl_event post_process_event;
 	CheckError(clEnqueueNDRangeKernel(queue, post_process, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &post_process_event));
+		1, &zncc_right_event, &post_process_event));
 
 
 	clReleaseMemObject(disp_left); 
@@ -341,9 +347,13 @@ int main(){
 	
 	cl_event occlusion_event;
 	CheckError(clEnqueueNDRangeKernel(queue, occlusion, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &occlusion_event));
+		1, &post_process_event, &occlusion_event));
+	
+	clFinish(queue);
 
 //readimage
+
+	
 	std::cout << "Reading image" << std::endl;
 	unsigned char* output = (unsigned char*)malloc(735 * 504 * 4 + 1);
 	std::size_t origin[3] = { 0 };
@@ -351,12 +361,14 @@ int main(){
 	clEnqueueReadImage(queue, final_image, CL_TRUE,
 		origin, region, 0, 0,
 		output, 0, NULL, NULL);
+	//waits until clEnqueueReadImage is done?
+	clFinish(queue);
 //encode image for test purposes
 	std::cout << "Creating final image" << std::endl;
 	unsigned error3 = lodepng_encode_file("test1.png", output, width / 4, height / 4, LCT_GREY, 8);
 	//unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
 	const char* asd = lodepng_error_text(error3);
-	std::cout << asd << std::endl;
+	std::cout <<"Lodepng:" << asd << std::endl;
 
 //Time kernels 
 	std::cout << "\nPost execution log:" << std::endl;
