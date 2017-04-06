@@ -11,7 +11,7 @@
 #define image1_path "im0.png"
 #define image2_path "im1.png"
 
-#define DEVICE  CL_DEVICE_TYPE_ALL
+#define DEVICE  CL_DEVICE_TYPE_CPU
 
 
 //
