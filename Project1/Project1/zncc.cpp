@@ -11,7 +11,19 @@
 #define image1_path "im0.png"
 #define image2_path "im1.png"
 
-#define DEVICE  CL_DEVICE_TYPE_CPU
+#define DEVICE  CL_DEVICE_TYPE_ALL
+
+
+
+cl_mem inputImage=0;
+cl_mem inputImage2=0;
+cl_mem greyscale1=0;
+cl_mem greyscale2=0;
+cl_mem disp_left=0;
+cl_mem disp_right=0;
+cl_mem processed=0;
+cl_mem final_image=0;
+
 
 
 //
@@ -20,12 +32,26 @@
 //Bad commentry
 //
 
+void release_mem_object()
+{
+	clReleaseMemObject(inputImage);
+	clReleaseMemObject(inputImage2);
+	clReleaseMemObject(greyscale1);
+	clReleaseMemObject(greyscale2);
+	clReleaseMemObject(disp_left);
+	clReleaseMemObject(disp_right);
+	clReleaseMemObject(processed);
+	clReleaseMemObject(final_image);
+
+
+}
 
 void CheckError(cl_int error)
 {
 	if (error != CL_SUCCESS) {
 		std::cerr << "OpenCL call failed with error " << error << std::endl;
 		
+		release_mem_object();
 
 			std::exit(1);
 	}
@@ -65,24 +91,24 @@ std::string LoadKernel(const char* name)
 std::string GetDeviceName(cl_device_id id)
 {
 	size_t size = 0;
-	clGetDeviceInfo(id, CL_DEVICE_NAME, 0, nullptr, &size);
+	clGetDeviceInfo(id, CL_DEVICE_NAME, 0, NULL, &size);
 
 	std::string result;
 	result.resize(size);
 	clGetDeviceInfo(id, CL_DEVICE_NAME, size,
-		const_cast<char*> (result.data()), nullptr);
+		const_cast<char*> (result.data()), NULL);
 
 	return result;
 }
 std::string GetPlatformName(cl_platform_id id)
 {
 	size_t size = 0;
-	clGetPlatformInfo(id, CL_PLATFORM_NAME, 0, nullptr, &size);
+	clGetPlatformInfo(id, CL_PLATFORM_NAME, 0, NULL, &size);
 
 	std::string result;
 	result.resize(size);
 	clGetPlatformInfo(id, CL_PLATFORM_NAME, size,
-		const_cast<char*> (result.data()), nullptr);
+		const_cast<char*> (result.data()), NULL);
 
 	return result;
 }
@@ -107,9 +133,12 @@ void Time(cl_event event)
 int main(){
 
 	
+
+
+	
 //get platform
 	cl_uint platformIdCount = 0;
-	clGetPlatformIDs(0, nullptr, &platformIdCount);
+	clGetPlatformIDs(0, NULL, &platformIdCount);
 
 	if (platformIdCount == 0) {
 		std::cerr << "No OpenCL platform found" << std::endl;
@@ -120,14 +149,14 @@ int main(){
 	}
 
 	std::vector<cl_platform_id> platformIds(platformIdCount);
-	clGetPlatformIDs(platformIdCount, platformIds.data(), nullptr);
+	clGetPlatformIDs(platformIdCount, platformIds.data(), NULL);
 
 	for (cl_uint i = 0; i < platformIdCount; ++i) {
 		std::cout << "\t (" << (i + 1) << ") : " << GetPlatformName(platformIds[i]) << std::endl;
 	}
 //get devices
 	cl_uint deviceIdCount = 0;
-	clGetDeviceIDs(platformIds[0], DEVICE, 0, nullptr,
+	clGetDeviceIDs(platformIds[0], DEVICE, 0, NULL,
 		&deviceIdCount);
 
 	if (deviceIdCount == 0) {
@@ -140,12 +169,12 @@ int main(){
 
 	std::vector<cl_device_id> deviceIds(deviceIdCount);
 	clGetDeviceIDs(platformIds[0], DEVICE, deviceIdCount,
-		deviceIds.data(), nullptr);
+		deviceIds.data(), NULL);
 
 	for (cl_uint i = 0; i < deviceIdCount; ++i) {
 		std::cout << "\t (" << (i + 1) << ") : " << GetDeviceName(deviceIds[i]) << std::endl;
 	}
-	std::cout << "Run time log:" << std::endl;
+	std::cout << "\n\nRun time log:" << std::endl;
 //context
 	const cl_context_properties contextProperties[] =
 	{
@@ -155,7 +184,7 @@ int main(){
 
 	cl_int error = CL_SUCCESS;
 	cl_context context = clCreateContext(contextProperties, deviceIdCount,
-		deviceIds.data(), nullptr, nullptr, &error);
+		deviceIds.data(), NULL, NULL, &error);
 	CheckError(error);
 
 	std::cout << "Context created" << std::endl;
@@ -165,7 +194,7 @@ int main(){
 		context);
 	
 	error = clBuildProgram(program, deviceIdCount, deviceIds.data(),
-		nullptr, nullptr, nullptr);
+		NULL, NULL, NULL);
 	
 	/*
 // Shows the log
@@ -221,7 +250,7 @@ int main(){
 //create greyscale imageobjects
 	std::cout << "Greysize 1" << std::endl;
 	cl_mem greyscale1 = clCreateImage2D(context, CL_MEM_WRITE_ONLY| CL_MEM_ALLOC_HOST_PTR,
-		&oformat, width/4, height/4, 0, nullptr, &error);
+		&oformat, width/4, height/4, 0, NULL, &error);
 
 
 
@@ -269,7 +298,7 @@ int main(){
 
 	free(image2);
 	cl_mem greyscale2 = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
-		&oformat, width / 4, height / 4, 0, nullptr, &error);
+		&oformat, width / 4, height / 4, 0, NULL, &error);
 
 	// Setup the kernel arguments again
 	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage2);
@@ -284,7 +313,7 @@ int main(){
 //zncc left
 	std::cout << "zncc left" << std::endl;
 	cl_mem disp_left = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
-		&oformat, width/4, height/4, 0, nullptr, &error);
+		&oformat, width/4, height/4, 0, NULL, &error);
 	CheckError(error);
 
 	clSetKernelArg(zncc_left, 0, sizeof(cl_mem), &greyscale1);
@@ -301,7 +330,7 @@ int main(){
 //zncc right
 	std::cout << "zncc right" << std::endl;
 	cl_mem disp_right = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
-		&oformat, width / 4, height / 4, 0, nullptr, &error);
+		&oformat, width / 4, height / 4, 0, NULL, &error);
 	CheckError(error);
 	//järjestys
 	clSetKernelArg(zncc_right, 0, sizeof(cl_mem), &greyscale2);
@@ -320,7 +349,7 @@ int main(){
 //post process
 	std::cout << "post process" << std::endl;
 	cl_mem processed = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
-		&oformat, width / 4, height / 4, 0, nullptr, &error);
+		&oformat, width / 4, height / 4, 0, NULL, &error);
 	CheckError(error);
 	//järjestys
 	clSetKernelArg(post_process, 0, sizeof(cl_mem), &disp_left);
@@ -339,7 +368,7 @@ int main(){
 //occlusion
 	std::cout << "occlusion filling" << std::endl;
 	cl_mem final_image = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
-		&oformat, width / 4, height / 4, 0, nullptr, &error);
+		&oformat, width / 4, height / 4, 0, NULL, &error);
 	CheckError(error);
 	//järjestys
 	clSetKernelArg(occlusion, 0, sizeof(cl_mem), &processed);
@@ -373,7 +402,7 @@ int main(){
 	std::cout <<"Lodepng:" << asd << std::endl;
 
 //Time kernels 
-	std::cout << "\nPost execution log:" << std::endl;
+	std::cout << "\n\nPost execution log:" << std::endl;
 	std::cout << "Greyscale and resize kernel:" << std::endl;
 	Time(gskernel_event);
 	std::cout << "Zncc_left kernel:" << std::endl;
@@ -390,7 +419,7 @@ int main(){
 	free(output);
 	clReleaseMemObject(final_image);
 	
-
+	release_mem_object();
 
 
 	clReleaseCommandQueue(queue);
@@ -410,4 +439,7 @@ int main(){
 	std::cout << "Total execution time:"<< diff <<"s" << std::endl;
 
 
+
 }
+
+
