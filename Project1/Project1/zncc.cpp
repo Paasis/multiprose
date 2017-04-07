@@ -249,8 +249,9 @@ int main(){
 	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale1);
 
 	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
-		 num_events_in_wait_list, nullptr, &gskernel_event));
+		 num_events_in_wait_list, NULL, &gskernel_event));
 	//release original image
+	clFinish(queue);
 	clReleaseMemObject(inputImage);
 
 	
@@ -275,8 +276,9 @@ int main(){
 	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale2);
 	//run kernel again
 	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
-		num_events_in_wait_list, nullptr, &gskernel_event));
+		0, NULL, &gskernel_event));
 	//release original image2
+	clFinish(queue);
 	clReleaseMemObject(inputImage2);
 
 //zncc left
@@ -292,9 +294,9 @@ int main(){
 	cl_event zncc_left_event;
 
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_left, work_dimension, work_offset, global_worksize, local_worksize,
-		1, &gskernel_event, &zncc_left_event));
+		0, NULL, &zncc_left_event));
 	
-
+	clFinish(queue);
 
 //zncc right
 	std::cout << "zncc right" << std::endl;
@@ -308,9 +310,9 @@ int main(){
 	cl_event zncc_right_event;
 
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_right, work_dimension, work_offset, global_worksize, local_worksize,
-		1, &zncc_left_event, &zncc_right_event));
+		0, NULL, &zncc_right_event));
 
-
+	clFinish(queue);
 	clReleaseMemObject(greyscale1);
 	clReleaseMemObject(greyscale2);
 
@@ -327,9 +329,9 @@ int main(){
 
 	cl_event post_process_event;
 	CheckError(clEnqueueNDRangeKernel(queue, post_process, work_dimension, work_offset, global_worksize, local_worksize,
-		1, &zncc_right_event, &post_process_event));
+		0, NULL, &post_process_event));
 
-
+	clFinish(queue);
 	clReleaseMemObject(disp_left); 
 	clReleaseMemObject(disp_right);
 
@@ -343,14 +345,14 @@ int main(){
 	clSetKernelArg(occlusion, 0, sizeof(cl_mem), &processed);
 	clSetKernelArg(occlusion, 1, sizeof(cl_mem), &final_image);
 
-	clReleaseMemObject(processed);
+
 	
 	cl_event occlusion_event;
 	CheckError(clEnqueueNDRangeKernel(queue, occlusion, work_dimension, work_offset, global_worksize, local_worksize,
-		1, &post_process_event, &occlusion_event));
+		0, NULL, &occlusion_event));
 	
 	clFinish(queue);
-
+	clReleaseMemObject(processed);
 //readimage
 
 	

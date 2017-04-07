@@ -51,8 +51,8 @@ unsigned int i,j,d,best_d=0;
 float mean1=0,mean2=0;
 float std1=0,std2=0;
 float z=0, zncc=0, max_sum=0;
-//int2 coord = { x,y };
-int2 coord2 = {x+4, y+4};
+int2 coord2 = { x,y };
+//int2 coord2 = {x+4, y+4};
 
 
 for(d=0;d<=ndisp;d=d+1){
@@ -130,8 +130,8 @@ unsigned int i,j,d,best_d=0;
 float mean1=0,mean2=0;
 float std1=0,std2=0;
 float z=0, zncc=0, max_sum=0;
-//int2 coord = { x,y };
-int2 coord2 = {x+4, y+4};
+int2 coord2 = { x,y };
+//int2 coord2 = {x+4, y+4};
 
 
 for(d=0;d<=ndisp;d=d+1){
