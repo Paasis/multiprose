@@ -1,3 +1,4 @@
+//Defines
 #include <stdlib.h>
 #include <CL/cl.h>
 #include <iostream>
@@ -11,10 +12,11 @@
 #define image1_path "im0.png"
 #define image2_path "im1.png"
 
-#define DEVICE  CL_DEVICE_TYPE_ALL
+//used to change device type 
+#define DEVICE  CL_DEVICE_TYPE_GPU
 
 
-
+//Initialization of the memoryobjects
 cl_mem inputImage=0;
 cl_mem inputImage2=0;
 cl_mem greyscale1=0;
@@ -29,9 +31,9 @@ cl_mem final_image=0;
 //
 //Ville Kemppainen & Mikko Paasimaa
 //Working implementation without optimisation
-//Bad commentry
 //
 
+//function which releases all memoryobjects in case of a crash
 void release_mem_object()
 {
 	clReleaseMemObject(inputImage);
@@ -45,7 +47,8 @@ void release_mem_object()
 
 
 }
-
+//Error checking function
+//function from Anterus blog
 void CheckError(cl_int error)
 {
 	if (error != CL_SUCCESS) {
@@ -62,7 +65,7 @@ void CheckError(cl_int error)
 
 
 
-
+//function from Anterus blog
 cl_program CreateProgram(const std::string& source,
 	cl_context context)
 {
@@ -76,7 +79,7 @@ cl_program CreateProgram(const std::string& source,
 
 	return program;
 }
-
+//function from Anterus blog
 std::string LoadKernel(const char* name)
 {
 	std::ifstream in(name);
@@ -87,7 +90,7 @@ std::string LoadKernel(const char* name)
 }
 
 
-
+//function from Anterus blog
 std::string GetDeviceName(cl_device_id id)
 {
 	size_t size = 0;
@@ -100,6 +103,7 @@ std::string GetDeviceName(cl_device_id id)
 
 	return result;
 }
+//function from Anterus blog
 std::string GetPlatformName(cl_platform_id id)
 {
 	size_t size = 0;
@@ -112,17 +116,18 @@ std::string GetPlatformName(cl_platform_id id)
 
 	return result;
 }
-
+//function used for timing specific events with clGetEventProfilingInfo
 void Time(cl_event event)
 {
-	//variable initiation
-	//timing
+	//function initialization
 	cl_ulong time_start, time_end;
 	double total_time;
-	//timing
+	//check that the event has ended before timing it	
 	clWaitForEvents(1, &event);
+	//get start and end times for the event
 	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(time_start), &time_start, NULL);
 	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(time_end), &time_end, NULL);
+	
 	total_time = time_end - time_start;
 	printf("Execution time in milliseconds = %0.3f ms\n", (total_time / 1000000.0));
 
@@ -132,11 +137,8 @@ void Time(cl_event event)
 
 int main(){
 
+// PLATFORM
 	
-
-
-	
-//get platform
 	cl_uint platformIdCount = 0;
 	clGetPlatformIDs(0, NULL, &platformIdCount);
 
@@ -154,7 +156,9 @@ int main(){
 	for (cl_uint i = 0; i < platformIdCount; ++i) {
 		std::cout << "\t (" << (i + 1) << ") : " << GetPlatformName(platformIds[i]) << std::endl;
 	}
-//get devices
+
+// DEVICE
+
 	cl_uint deviceIdCount = 0;
 	clGetDeviceIDs(platformIds[0], DEVICE, 0, NULL,
 		&deviceIdCount);
@@ -175,7 +179,9 @@ int main(){
 		std::cout << "\t (" << (i + 1) << ") : " << GetDeviceName(deviceIds[i]) << std::endl;
 	}
 	std::cout << "\n\nRun time log:" << std::endl;
-//context
+
+// CONTEXT
+	std::cout << "Context: ";
 	const cl_context_properties contextProperties[] =
 	{
 		CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties> (platformIds[0]),
@@ -187,24 +193,26 @@ int main(){
 		deviceIds.data(), NULL, NULL, &error);
 	CheckError(error);
 
-	std::cout << "Context created" << std::endl;
+	std::cout << "Done" << std::endl;
 
-// Create a program from source
+// PROGRAM
+	std::cout << "Building program: ";
 	cl_program program = CreateProgram(LoadKernel(kernelpath),
 		context);
 	
 	error = clBuildProgram(program, deviceIdCount, deviceIds.data(),
 		NULL, NULL, NULL);
+	std::cout << "Done" << std::endl;
 	
 	/*
-// Shows the log
+	// Shows program building log. Used for debugging build errors
 	char* build_log;
 	size_t log_size;
 	// First call to know the proper size
-	clGetProgramBuildInfo(program, deviceIds[1], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
+	clGetProgramBuildInfo(program, deviceIds[0], CL_PROGRAM_BUILD_LOG, 0, NULL, &log_size);
 	build_log = new char[log_size + 1];
 	// Second call to get the log
-	clGetProgramBuildInfo(program, deviceIds[1], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
+	clGetProgramBuildInfo(program, deviceIds[0], CL_PROGRAM_BUILD_LOG, log_size, build_log, NULL);
 	build_log[log_size] = '\0';
 	std::cout << build_log << std::endl;
 	delete[] build_log;
@@ -215,7 +223,8 @@ int main(){
 	t1 = clock();
 
 
-//kernel
+// Kernel creation
+	std::cout << "Kernel creation: ";
 	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateKernel.html
 	cl_kernel gskernel = clCreateKernel(program, "resizeandgreyscale", &error);
 	CheckError(error);
@@ -227,44 +236,41 @@ int main(){
 	CheckError(error);
 	cl_kernel occlusion = clCreateKernel(program, "occlusion", &error);
 	CheckError(error);
-	std::cout << "kernel created" << std::endl;
+	std::cout << "Done" << std::endl;
 
-//image
+// Load input image 1 with lodepng
 	unsigned char* image;
 	unsigned int width, height;
 	lodepng_decode32_file(&image, &width, &height, image1_path);
-	//Image image= load_image("im0.png");
-	std::cout << "Image loaded" << std::endl;
-//input format
+	
+	std::cout << "Image 1 loaded" << std::endl;
+
+// Input image objects format
 	static const cl_image_format format = { CL_RGBA, CL_UNSIGNED_INT8 };
-//output format
+// Output image objects format
 	static const cl_image_format oformat = { CL_R, CL_UNSIGNED_INT8 };
 	
 	
-//input image
+// Create image object for input image
 	cl_mem inputImage = clCreateImage2D(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR,
 		&format, width, height, 0, image, &error);
 	CheckError(error);
-	
+	//free the original image loaded with lodepng becouse it is  no longer used anywhere
 	free(image);
-//create greyscale imageobjects
-	std::cout << "Greysize 1" << std::endl;
-	cl_mem greyscale1 = clCreateImage2D(context, CL_MEM_WRITE_ONLY| CL_MEM_ALLOC_HOST_PTR,
+
+// Create image object for greyscale image 1
+	cl_mem greyscale1 = clCreateImage2D(context, CL_MEM_READ_WRITE| CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width/4, height/4, 0, NULL, &error);
 
 
 
-//Command queue
-
-	//const cl_queue_properties prop = CL_QUEUE_PROFILING_ENABLE;
+// Command queue
+	std::cout << "Command queue creation: ";
 	cl_command_queue queue = clCreateCommandQueue(context, deviceIds[0], CL_QUEUE_PROFILING_ENABLE, &error);
-
-	/*
-	cl_command_queue queue = clCreateCommandQueueWithProperties(context, deviceIds[0],
-		0, &error);
 	CheckError(error);
-	*/
-//Kernel
+	std::cout << "Done" << std::endl;
+// Kernel
+	//setting up variables used on running the kernel
 	cl_uint work_dimension = 2;
 	const size_t work_offset = 0;
 	const size_t global_worksize[2] = { width/4,height/4 };
@@ -273,135 +279,153 @@ int main(){
 	cl_uint num_events_in_wait_list = 0;
 	cl_event gskernel_event;
 
-	// Setup the kernel arguments
+	// Setup the kernel arguments for gskernel
 	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage);
 	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale1);
 
+	std::cout << "Greyscale and resize kernel for image 1: ";
 	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
 		 num_events_in_wait_list, NULL, &gskernel_event));
-	//release original image
+	std::cout << "Done" << std::endl;
+
+	// wait for gskernel to stop executing before continuing
 	clFinish(queue);
+	// release original images imageobject
 	clReleaseMemObject(inputImage);
 
-	
-
-	//read image 2 
+// Load input image 2 with lodepng
 	unsigned char* image2;
 	
 	lodepng_decode32_file(&image2, &width, &height, image2_path);
 
 	std::cout << "Image2 loaded" << std::endl;
-	//load image 2 to imageobject
+	// Create imageobject for image 2
 	cl_mem inputImage2 = clCreateImage2D(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR,
 		&format, width, height, 0, image2, &error);
 	CheckError(error);
-
+	// Free image 2 as it is nolonger used
 	free(image2);
-	cl_mem greyscale2 = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+	// Greyscale and resize image 2
+	cl_mem greyscale2 = clCreateImage2D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width / 4, height / 4, 0, NULL, &error);
-
-	// Setup the kernel arguments again
+	
+	// Setup the kernel arguments for gskernel to use image 2 instead of image 1
 	clSetKernelArg(gskernel, 0, sizeof(cl_mem), &inputImage2);
 	clSetKernelArg(gskernel, 1, sizeof(cl_mem), &greyscale2);
-	//run kernel again
+	std::cout << "Greyscale kernel for image 2: ";
+	// run kernel again
 	CheckError(clEnqueueNDRangeKernel(queue, gskernel, work_dimension, work_offset, global_worksize, local_worksize,
 		0, NULL, &gskernel_event));
-	//release original image2
+	std::cout << "Done" << std::endl;
+	
+	// Wait for kernel to stop executing before continuing
 	clFinish(queue);
+	//release original image2 image object 
 	clReleaseMemObject(inputImage2);
 
-//zncc left
-	std::cout << "zncc left" << std::endl;
-	cl_mem disp_left = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+//ZNCC_LEFT
+	std::cout << "Zncc_left kernel: " ;
+	// create image object for the  output image produced by the zncc_left kernel
+	cl_mem disp_left = clCreateImage2D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width/4, height/4, 0, NULL, &error);
 	CheckError(error);
-
+	// set kernel arguments
 	clSetKernelArg(zncc_left, 0, sizeof(cl_mem), &greyscale1);
 	clSetKernelArg(zncc_left, 1, sizeof(cl_mem), &greyscale2);
 	clSetKernelArg(zncc_left, 2, sizeof(cl_mem), &disp_left);
 	
 	cl_event zncc_left_event;
-
+	// run kernel
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_left, work_dimension, work_offset, global_worksize, local_worksize,
 		0, NULL, &zncc_left_event));
+	std::cout << "Done" << std::endl;
 	
-	clFinish(queue);
 
-//zncc right
-	std::cout << "zncc right" << std::endl;
-	cl_mem disp_right = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+//ZNCC_RIGHT
+	std::cout << "Zncc_right kernel: " ;
+	cl_mem disp_right = clCreateImage2D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width / 4, height / 4, 0, NULL, &error);
 	CheckError(error);
-	//järjestys
+	
+	// Set kernel arguments
 	clSetKernelArg(zncc_right, 0, sizeof(cl_mem), &greyscale2);
 	clSetKernelArg(zncc_right, 1, sizeof(cl_mem), &greyscale1);
 	clSetKernelArg(zncc_right, 2, sizeof(cl_mem), &disp_right);
 	cl_event zncc_right_event;
-
+	// run kernel
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_right, work_dimension, work_offset, global_worksize, local_worksize,
 		0, NULL, &zncc_right_event));
-
+	
+	//wait for both zncc kernels to stop before continuing to the post processing
 	clFinish(queue);
+
+	//release greyscale images
 	clReleaseMemObject(greyscale1);
 	clReleaseMemObject(greyscale2);
+	std::cout << "Done" << std::endl;
 
-
-//post process
-	std::cout << "post process" << std::endl;
-	cl_mem processed = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+// POST_PROCESS
+	std::cout << "Post process: ";
+	// create image object for the processed image
+	cl_mem processed = clCreateImage2D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width / 4, height / 4, 0, NULL, &error);
 	CheckError(error);
-	//järjestys
+	// set up kernel arguments
 	clSetKernelArg(post_process, 0, sizeof(cl_mem), &disp_left);
 	clSetKernelArg(post_process, 1, sizeof(cl_mem), &disp_right);
 	clSetKernelArg(post_process, 2, sizeof(cl_mem), &processed);
 
 	cl_event post_process_event;
+	//run kernel
 	CheckError(clEnqueueNDRangeKernel(queue, post_process, work_dimension, work_offset, global_worksize, local_worksize,
 		0, NULL, &post_process_event));
 
 	clFinish(queue);
+	// Release disparity images
 	clReleaseMemObject(disp_left); 
 	clReleaseMemObject(disp_right);
 
+	std::cout << "Done" << std::endl;
 
-//occlusion
-	std::cout << "occlusion filling" << std::endl;
-	cl_mem final_image = clCreateImage2D(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR,
+// OCCLUSION
+	std::cout << "Occlusion filling: " ;
+	//create image object for the final image
+	cl_mem final_image = clCreateImage2D(context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width / 4, height / 4, 0, NULL, &error);
 	CheckError(error);
-	//järjestys
+	//kernel arguments for the occlusion filling kernel
 	clSetKernelArg(occlusion, 0, sizeof(cl_mem), &processed);
 	clSetKernelArg(occlusion, 1, sizeof(cl_mem), &final_image);
 
-
-	
 	cl_event occlusion_event;
+	// run kernel
 	CheckError(clEnqueueNDRangeKernel(queue, occlusion, work_dimension, work_offset, global_worksize, local_worksize,
 		0, NULL, &occlusion_event));
 	
 	clFinish(queue);
+	//release processed image
 	clReleaseMemObject(processed);
-//readimage
+	std::cout << "Done" << std::endl;
 
-	
+// Read image from the host
 	std::cout << "Reading image" << std::endl;
-	unsigned char* output = (unsigned char*)malloc(735 * 504 * 4 + 1);
+	unsigned char* output = (unsigned char*)malloc(735 * 504);
 	std::size_t origin[3] = { 0 };
 	std::size_t region[3] = { width / 4, height / 4, 1 };
 	clEnqueueReadImage(queue, final_image, CL_TRUE,
 		origin, region, 0, 0,
 		output, 0, NULL, NULL);
-	//waits until clEnqueueReadImage is done?
+	//waits until clEnqueueReadImage is done
 	clFinish(queue);
-//encode image for test purposes
+
+//Creating the final image
 	std::cout << "Creating final image" << std::endl;
 	unsigned error3 = lodepng_encode_file("test1.png", output, width / 4, height / 4, LCT_GREY, 8);
-	//unsigned error1=lodepng::encode("test.png", output, width/4, height/4);
+	//show lodepng error messages
 	const char* asd = lodepng_error_text(error3);
 	std::cout <<"Lodepng:" << asd << std::endl;
 
-//Time kernels 
+// Time kernels using Time() function
 	std::cout << "\n\nPost execution log:" << std::endl;
 	std::cout << "Greyscale and resize kernel:" << std::endl;
 	Time(gskernel_event);
@@ -414,26 +438,24 @@ int main(){
 	std::cout << "Occlusion kernel:" << std::endl;
 	Time(occlusion_event);
 
-//RELEASE
-	
+// Release all the remaining objects
+	// images
 	free(output);
 	clReleaseMemObject(final_image);
-	
-	release_mem_object();
-
-
+	// command queue
 	clReleaseCommandQueue(queue);
-	
+	// kernels
 	clReleaseKernel(gskernel);
 	clReleaseKernel(zncc_left);
 	clReleaseKernel(zncc_right);
 	clReleaseKernel(post_process);
 	clReleaseKernel(occlusion);
-
+	// program
 	clReleaseProgram(program);
-
+	// context
 	clReleaseContext(context);
 
+	// end timer and show result
 	t2 = clock();
 	float diff(((float)t2 - (float)t1) / CLOCKS_PER_SEC);
 	std::cout << "Total execution time:"<< diff <<"s" << std::endl;

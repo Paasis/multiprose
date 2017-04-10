@@ -1,0 +1,23 @@
+ts135 machine
+
+Device_type_GPU
+
+Greyscale and resize kernel: 7.913 ms
+Zncc_left 490.201 ms
+zncc_right 488.622 ms
+Postprocess: 0.070 ms
+occlusion 0.191 ms
+total time 4.876 s
+
+device_type_CPU
+
+Greyscale and resize kernel: 2.506 ms
+Zncc_left 34740.488 ms
+zncc_right 34267.631 ms
+Postprocess: 6.097 ms
+occlusion 6.705 ms
+total time 72.728 s
+
+
+optmizations 
+native functions. native_sqrt in kernels
