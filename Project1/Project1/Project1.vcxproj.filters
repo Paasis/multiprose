@@ -24,6 +24,12 @@
     <ClCompile Include="lodepng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="zncc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lodepng.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="im0.png">
@@ -41,6 +47,9 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="kernel.cl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="kernel_unoptimized.cl">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

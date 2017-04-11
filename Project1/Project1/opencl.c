@@ -27,7 +27,7 @@
 
 // https://gist.github.com/courtneyfaulkner/7919509 List openCL platforms and devices.
 
-int main2() {
+int main1() {
 
     int i, j;
     char* value;
@@ -42,6 +42,7 @@ int main2() {
     cl_uint c_units;
     cl_uint c_freq;
     cl_ulong c_buffer;
+	cl_uint d_buffer;
     size_t group_size;
     size_t item_sizes;
 
@@ -109,22 +110,44 @@ int main2() {
             // print local mem size
             clGetDeviceInfo(devices[j], CL_DEVICE_LOCAL_MEM_SIZE,
                 sizeof(local_mem_size), &local_mem_size, NULL);
-            printf(" %d.%d local_mem_size: %d\n", j + 1, 4, local_mem_size);
+            printf(" %d.%d local_mem_size: %d\n", j + 1, 5, local_mem_size);
 
             // print parallel compute units
             clGetDeviceInfo(devices[j], CL_DEVICE_MAX_COMPUTE_UNITS,
                 sizeof(maxComputeUnits), &maxComputeUnits, NULL);
-            printf(" %d.%d Parallel compute units: %d\n", j + 1, 4, maxComputeUnits);
+            printf(" %d.%d Parallel compute units: %d\n", j + 1, 6, maxComputeUnits);
 
             // print clock freq
             clGetDeviceInfo(devices[j], CL_DEVICE_MAX_CLOCK_FREQUENCY,
                 sizeof(c_freq), &c_freq, NULL);
-            printf(" %d.%d frequency: %d\n", j + 1, 4, c_freq);
+            printf(" %d.%d frequency: %d\n", j + 1, 7, c_freq);
 
             // print buffer size
             clGetDeviceInfo(devices[j], CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
                 sizeof(c_buffer), &c_buffer, NULL);
-            printf(" %d.%d buffer size: %d\n", j + 1, 4, c_buffer);
+            printf(" %d.%d buffer size: %d\n", j + 1, 8, c_buffer);
+
+			// print max workgroup size
+			clGetDeviceInfo(devices[j], CL_DEVICE_MAX_WORK_GROUP_SIZE,
+				sizeof(c_buffer), &c_buffer, NULL);
+			printf(" %d.%d Workgroup max size: %d\n", j + 1, 9, c_buffer);
+
+
+			clGetDeviceInfo(devices[j], CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,
+				sizeof(d_buffer), &d_buffer, NULL);
+			size_t e_buffer[sizeof(d_buffer)];
+			int i;
+			// print max work item size
+			clGetDeviceInfo(devices[j], CL_DEVICE_MAX_WORK_ITEM_SIZES,
+				sizeof(e_buffer), &e_buffer, NULL);
+
+				for(i = 0; i < d_buffer; i++)
+				{
+					printf(" %d.%d Work item max size for dimension %d: %d\n", j + 1, 10,i+1, e_buffer[i]);
+
+				}
+			
+
 
 
 

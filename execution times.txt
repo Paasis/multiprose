@@ -1,23 +1,30 @@
 ts135 machine
+Optimized code
 
 Device_type_GPU
 
-Greyscale and resize kernel: 7.913 ms
-Zncc_left 490.201 ms
-zncc_right 488.622 ms
-Postprocess: 0.070 ms
-occlusion 0.191 ms
-total time 4.876 s
+Greyscale and resize kernel: 0.835 ms
+Zncc_left 297.839 ms
+zncc_right 297.005 ms
+Postprocess: 0.076 ms
+occlusion 0.210 ms
+total time 4.587 s
 
 device_type_CPU
 
-Greyscale and resize kernel: 2.506 ms
-Zncc_left 34740.488 ms
-zncc_right 34267.631 ms
-Postprocess: 6.097 ms
-occlusion 6.705 ms
-total time 72.728 s
+Greyscale and resize kernel: 2.146 ms
+Zncc_left 22920.327 ms
+zncc_right 22136.045 ms
+Postprocess: 3.138 ms
+occlusion 3.700 ms
+total time 48.767 s
 
 
 optmizations 
 native functions. native_sqrt in kernels
+
+
+
+
+c program
+47.075 s

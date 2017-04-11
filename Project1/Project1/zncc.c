@@ -54,6 +54,36 @@ char zncc_left(unsigned char* greyscale_image1, unsigned char* greyscale_image2,
 		//käy läpi jokaisen sarakkeen
 
 		for (i = j; i<j + greywidth; i = i + 1){
+			/////////////////////////////////////////////////////////////////
+			for (y = i; y < i + greywidth*window; y = y + greywidth){
+				for (x = y; x <= y + window; x = x + 1){
+					//get mean
+					//img1
+					mean1 = mean1 + greyscale_image1[x];
+					
+
+				}
+
+			}
+			//img1
+			mean1 = mean1 / window;
+	
+
+			//              printf("\nzncc loop");
+			for (y = i; y<i + greywidth*window; y = y + greywidth){
+				for (x = y; x <= y + window; x = x + 1){
+					//get values to calculate ZNCC
+					//img1
+					std1 = std1 + (greyscale_image1[x] - mean1)*(greyscale_image1[x] - mean1);
+
+				}
+
+			}
+			//img1
+			std1 = sqrt(std1 / window);
+			/////////////////////////////////////////
+
+
 
 			for (d = 0; d < ndisp; d = d + 1){
 				//                printf("\nMean loop");
@@ -61,14 +91,14 @@ char zncc_left(unsigned char* greyscale_image1, unsigned char* greyscale_image2,
 					for (x = y; x <= y + window; x = x + 1){
 						//get mean
 						//img1
-						mean1 = mean1 + greyscale_image1[x];
+						
 						mean2 = mean2 + greyscale_image2[x - d];
 
 					}
 
 				}
 				//img1
-				mean1 = mean1 / window;
+			
 				mean2 = mean2 / window;
 
 				//              printf("\nzncc loop");
@@ -76,7 +106,7 @@ char zncc_left(unsigned char* greyscale_image1, unsigned char* greyscale_image2,
 					for (x = y; x <= y + window; x = x + 1){
 						//get values to calculate ZNCC
 						//img1
-						std1 = std1 + (greyscale_image1[x] - mean1)*(greyscale_image1[x] - mean1);
+					
 						std2 = std2 + (greyscale_image2[x - d] - mean2)*(greyscale_image2[x - d] - mean2);
 
 						z = z + ((greyscale_image1[x] - mean1)*(greyscale_image2[x - d] - mean2));
@@ -85,7 +115,7 @@ char zncc_left(unsigned char* greyscale_image1, unsigned char* greyscale_image2,
 
 				}
 				//img1
-				std1 = sqrt(std1 / window);
+				
 				std2 = sqrt(std2 / window);
 				zncc = z / (std1*std2);
 
@@ -100,9 +130,9 @@ char zncc_left(unsigned char* greyscale_image1, unsigned char* greyscale_image2,
 
 				//Resets the values for the next d cycle
 				//img1
-				mean1 = 0;
+			//	mean1 = 0;
 				mean2 = 0;
-				std1 = 0;
+			//	std1 = 0;
 				std2 = 0;
 				zncc = 0;
 				z = 0;
@@ -137,7 +167,37 @@ char zncc_right(unsigned char* greyscale_image1, unsigned char* greyscale_image2
 		//käy läpi jokaisen sarakkeen
 
 		for (i = j; i<j + greywidth; i = i + 1){
+			////////////////////
+			for (y = i; y <= i + greywidth*window; y = y + greywidth){
+				for (x = y; x <= y + window; x = x + 1){
+					//get mean
 
+					//img2
+					mean1 = mean1 + greyscale_image2[x];
+					
+
+				}
+
+			}
+
+			//img2
+			mean1 = mean1 / window;
+			
+			//              printf("\nzncc loop");
+			for (y = i; y<i + greywidth*window; y = y + greywidth){
+				for (x = y; x < y + window; x = x + 1){
+					//get values to calculate ZNCC
+					//img2
+					std1 = std1 + (greyscale_image2[x] - mean1)*(greyscale_image2[x] - mean1);
+
+
+				}
+
+			}
+
+			//img2
+			std1 = sqrt(std1 / window);
+			/////////////////////////////////////////
 			for (d = 0; d < ndisp; d = d + 1){
 				//                printf("\nMean loop");
 				for (y = i; y <= i + greywidth*window; y = y + greywidth){
@@ -145,7 +205,7 @@ char zncc_right(unsigned char* greyscale_image1, unsigned char* greyscale_image2
 						//get mean
 
 						//img2
-						mean1 = mean1 + greyscale_image2[x];
+						
 						mean2 = mean2 + greyscale_image1[x + d];
 
 					}
@@ -153,14 +213,14 @@ char zncc_right(unsigned char* greyscale_image1, unsigned char* greyscale_image2
 				}
 
 				//img2
-				mean1 = mean1 / window;
+			
 				mean2 = mean2 / window;
 				//              printf("\nzncc loop");
 				for (y = i; y<i + greywidth*window; y = y + greywidth){
 					for (x = y; x < y + window; x = x + 1){
 						//get values to calculate ZNCC
 						//img2
-						std1 = std1 + (greyscale_image2[x] - mean1)*(greyscale_image2[x] - mean1);
+			
 						std2 = std2 + (greyscale_image1[x + d] - mean2)*(greyscale_image1[x + d] - mean2);
 
 						z = z + ((greyscale_image2[x] - mean1)*(greyscale_image1[x + d] - mean2));
@@ -170,7 +230,7 @@ char zncc_right(unsigned char* greyscale_image1, unsigned char* greyscale_image2
 				}
 
 				//img2
-				std1 = sqrt(std1 / window);
+				
 				std2 = sqrt(std2 / window);
 				zncc = z / (std1*std2);
 
@@ -185,9 +245,9 @@ char zncc_right(unsigned char* greyscale_image1, unsigned char* greyscale_image2
 
 				//Resets the values for the next d cycle
 
-				mean1 = 0;
+			
 				mean2 = 0;
-				std1 = 0;
+				
 				std2 = 0;
 				zncc = 0;
 				z = 0;
@@ -233,26 +293,26 @@ char post_process(unsigned char* final_image, unsigned char* disp_image1, unsign
 			for (j = 1; j<window; j = j + 1){
 
 				if (final_image[i] != 0){
-					printf("\n%d", j);
+				
 					break;
 				}
 				
 				
 				else if (reference[i + j] != 0){
 					final_image[i] = reference[i + j];
-					printf("\nb");
+					
 				}
 				else if (reference[i + j*greywidth] != 0){
 					final_image[i] = reference[i + j*greywidth];
-					printf("\nc");
+					
 				}
 				else if (reference[i - j] != 0){
 					final_image[i] = reference[i - j];
-					printf("\na");
+					
 				}
 				else if (reference[i - j*greywidth] != 0){
 					final_image[i] = reference[i - j*greywidth];
-					printf("\nd");
+					
 				}
 
 				else {

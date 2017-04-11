@@ -11,8 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lodepng.c" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="opencl.c" />
+    <ClCompile Include="zncc.c" />
     <ClCompile Include="zncc.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -23,6 +25,7 @@
     <None Include="copy.cl" />
     <None Include="hello.cl" />
     <None Include="kernel.cl" />
+    <None Include="kernel_unoptimized.cl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lodepng.h" />

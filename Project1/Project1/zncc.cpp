@@ -1,5 +1,5 @@
 //Defines
-#pragma OPENCL EXTENSION cl_khr_fp16 : enable
+
 
 #include <stdlib.h>
 #include <CL/cl.h>
@@ -15,7 +15,7 @@
 #define image2_path "im1.png"
 
 //used to change device type 
-#define DEVICE  CL_DEVICE_TYPE_GPU
+#define DEVICE  CL_DEVICE_TYPE_CPU
 
 
 //Initialization of the memoryobjects
@@ -339,6 +339,7 @@ int main(){
 	// run kernel
 	CheckError(clEnqueueNDRangeKernel(queue, zncc_left, work_dimension, work_offset, global_worksize, local_worksize,
 		0, NULL, &zncc_left_event));
+	
 	std::cout << "Done" << std::endl;
 	
 

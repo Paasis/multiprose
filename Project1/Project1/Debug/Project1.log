@@ -1,34 +1,23 @@
-﻿Build started 5.4.2017 11:02:49.
-     1>Project "C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Project1\Project1.vcxproj" on node 2 (Build target(s)).
+﻿Build started 11.4.2017 15:21:05.
+     1>Project "C:\Users\vilkempp\Downloads\multiprose\Project1\Project1\Project1.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP SDK\3.0\\include" /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt zncc.cpp
-         zncc.cpp
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(98): warning C4244: '=' : conversion from 'cl_ulong' to 'double', possible loss of data
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(212): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(219): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(228): warning C4996: 'clCreateCommandQueue': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1359) : see declaration of 'clCreateCommandQueue'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(260): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(265): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(279): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(296): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(315): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
-     1>c:\users\vilkempp.student\downloads\multiprose\project1\project1\zncc.cpp(334): warning C4996: 'clCreateImage2D': was declared deprecated
-                 c:\program files (x86)\amd app sdk\3.0\include\cl\cl.h(1318) : see declaration of 'clCreateImage2D'
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP SDK\3.0\\include" /ZI /nologo /W3 /WX- /sdl- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt zncc.c
+         zncc.c
+     1>c:\users\vilkempp\downloads\multiprose\project1\project1\zncc.c(34): warning C4244: '=' : conversion from 'double' to 'unsigned char', possible loss of data
+     1>c:\users\vilkempp\downloads\multiprose\project1\project1\zncc.c(83): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\vilkempp\downloads\multiprose\project1\project1\zncc.c(119): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\vilkempp\downloads\multiprose\project1\project1\zncc.c(199): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\vilkempp\downloads\multiprose\project1\project1\zncc.c(234): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\vilkempp\downloads\multiprose\project1\project1\zncc.c(328): warning C4244: '=' : conversion from 'double' to 'unsigned char', possible loss of data
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\AMD APP SDK\3.0\\lib\x86" OpenCL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.lib" /MACHINE:X86 Debug\lodepng.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\vilkempp\Downloads\multiprose\Project1\Debug\Project1.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files (x86)\AMD APP SDK\3.0\\lib\x86" OpenCL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\vilkempp\Downloads\multiprose\Project1\Debug\Project1.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\vilkempp\Downloads\multiprose\Project1\Debug\Project1.lib" /MACHINE:X86 Debug\lodepng.obj
+         Debug\lodepng.obj
          Debug\opencl.obj
          Debug\zncc.obj
-         Project1.vcxproj -> C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Debug\Project1.exe
-     1>Done Building Project "C:\Users\vilkempp.STUDENT\Downloads\multiprose\Project1\Project1\Project1.vcxproj" (Build target(s)).
+         Debug\zncc.obj
+         Project1.vcxproj -> C:\Users\vilkempp\Downloads\multiprose\Project1\Debug\Project1.exe
+     1>Done Building Project "C:\Users\vilkempp\Downloads\multiprose\Project1\Project1\Project1.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.66
+Time Elapsed 00:00:00.57
