@@ -1,4 +1,6 @@
 //Defines
+#pragma OPENCL EXTENSION cl_khr_fp16 : enable
+
 #include <stdlib.h>
 #include <CL/cl.h>
 #include <iostream>
@@ -201,10 +203,11 @@ int main(){
 		context);
 	
 	error = clBuildProgram(program, deviceIdCount, deviceIds.data(),
-		NULL, NULL, NULL);
+		"-cl-fast-relaxed-math", NULL, NULL);
+	
 	std::cout << "Done" << std::endl;
 	
-	/*
+	
 	// Shows program building log. Used for debugging build errors
 	char* build_log;
 	size_t log_size;
@@ -216,7 +219,7 @@ int main(){
 	build_log[log_size] = '\0';
 	std::cout << build_log << std::endl;
 	delete[] build_log;
-	*/
+	
 
 //Execution timer start
 	clock_t t1, t2;
@@ -225,7 +228,7 @@ int main(){
 
 // Kernel creation
 	std::cout << "Kernel creation: ";
-	// http://www.khronos.org/registry/cl/sdk/1.1/docs/man/xhtml/clCreateKernel.html
+
 	cl_kernel gskernel = clCreateKernel(program, "resizeandgreyscale", &error);
 	CheckError(error);
 	cl_kernel zncc_left = clCreateKernel(program, "zncc_left", &error);
@@ -261,8 +264,6 @@ int main(){
 // Create image object for greyscale image 1
 	cl_mem greyscale1 = clCreateImage2D(context, CL_MEM_READ_WRITE| CL_MEM_ALLOC_HOST_PTR,
 		&oformat, width/4, height/4, 0, NULL, &error);
-
-
 
 // Command queue
 	std::cout << "Command queue creation: ";
